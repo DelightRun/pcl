@@ -57,6 +57,10 @@ void pcl::gpu::Feature::setRadiusSearch(float radius, int max_results) { radius_
 /// FeatureFromNormals
 void pcl::gpu::FeatureFromNormals::setInputNormals(const Normals& normals)  { normals_ = normals; }
 
+/////////////////////////////////////////////////////////////////////////
+/// FeatureFromIRF
+void pcl::gpu::FeatureFromIRF::setInputIRF(const IRF& irf)  { irf_ = irf; }
+
 
 /////////////////////////////////////////////////////////////////////////
 /// NormalEstimation
@@ -120,6 +124,41 @@ void pcl::gpu::NormalEstimation::compute(Normals& normals)
         computeNormals(surface, nn_indices_, normals);
         flipNormalTowardsViewpoint(cloud_, indices_, vpx_, vpy_, vpz_, normals);
     }    
+}
+
+/////////////////////////////////////////////////////////////////////////
+/// IRFEstimation
+pcl::gpu::IRFEstimation::IRFEstimation() {}
+
+void pcl::gpu::IRFEstimation::computeIRF(const PointCloud& cloud, const NeighborIndices& nn_indices, IRF& irf)
+{
+	irf.create(nn_indices.neighboors_size());
+
+	const device::PointCloud& c = (const device::PointCloud&)cloud;
+	device::IRF& i = (device::IRF&)irf;
+
+	device::computeIRF(c, nn_indices, i);
+}
+
+void pcl::gpu::IRFEstimation::compute(IRF& irf)
+{
+	assert(!cloud_.empty());
+
+	PointCloud& surface = surface_.empty() ? cloud_ : surface_;
+
+	octree_.setCloud(surface);
+	octree_.build();
+
+	if (indices_.empty() || (!indices_.empty() && indices_.size() == cloud_.size()))
+	{
+		octree_.radiusSearch(cloud_, radius_, max_results_, nn_indices_);
+		computeIRF(surface, nn_indices_, irf);
+	}
+	else
+	{
+		octree_.radiusSearch(cloud_, indices_, radius_, max_results_, nn_indices_);
+		computeIRF(surface, nn_indices_, irf);
+	}
 }
 
 

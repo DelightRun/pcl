@@ -59,8 +59,14 @@ namespace pcl
         typedef float4 NormalType;
         typedef float4 PointXYZRGB;
 
+		struct IRFType
+		{
+			float3 axis_x, axis_y, axis_z;
+		};
+
         typedef DeviceArray< PointType> PointCloud;        
         typedef DeviceArray<NormalType> Normals;
+		typedef DeviceArray<IRFType> IRF;
         typedef DeviceArray<int> Indices;
 
         typedef DeviceArray< PointType> PointXYZRGBCloud;
@@ -68,6 +74,11 @@ namespace pcl
 		template <int N> struct Histogram
 		{
 			float histogram[N];
+		};
+
+		template <int L, int N> struct ISSignature
+		{
+			float features[1 + (L - 1)*N];
 		};
 
 		typedef Histogram<125> PFHSignature125;
@@ -103,6 +114,9 @@ namespace pcl
             float pc1;
             float pc2;
         };
+
+		// intrinsic reference frame estimation
+		void computeIRF(const PointCloud& cloud, const NeighborIndices& nn_indices, IRF& irf);
 
         // normals estimation
         void computeNormals(const PointCloud& cloud, const NeighborIndices& nn_indices, Normals& normals);

@@ -55,9 +55,11 @@ namespace pcl
         public:
             typedef PointXYZ PointType;
             typedef PointXYZ NormalType;
+			typedef struct { PointXYZ axis_x, axis_y, axis_z; } IRFType;
 
             typedef DeviceArray< PointType> PointCloud;
             typedef DeviceArray<NormalType> Normals;
+			typedef DeviceArray<IRFType> IRF;
             typedef DeviceArray<int> Indices;
 
             Feature();
@@ -89,6 +91,18 @@ namespace pcl
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////  
+        /** \brief @b Feature represents the base feature class that takes IRF as input also.  */
+
+		struct PCL_EXPORTS FeatureFromIRF : public Feature
+		{
+		public:
+
+			void setInputIRF(const IRF& irf);
+		protected:
+			IRF irf_;
+		};
+ 
+        ////////////////////////////////////////////////////////////////////////////////////////////  
         /** \brief @b Class for normal estimation.  */
         class PCL_EXPORTS NormalEstimation : public Feature
         {
@@ -108,6 +122,22 @@ namespace pcl
             float vpx_, vpy_, vpz_;
             NeighborIndices nn_indices_;
         };        
+ 
+        ////////////////////////////////////////////////////////////////////////////////////////////  
+        /** \brief @b Class for IRF estimation.  */
+        class PCL_EXPORTS IRFEstimation : public Feature
+        {
+        public:
+            typedef Feature::IRFType IRFType; 
+
+            IRFEstimation();
+            void compute(IRF& irf);
+
+            static void computeIRF(const PointCloud& cloud, const NeighborIndices& nn_indices, IRF& irf);
+        private:              
+            NeighborIndices nn_indices_;
+        };        
+
 
         ////////////////////////////////////////////////////////////////////////////////////////////  
         /** \brief @b Class for PFH estimation.  */
