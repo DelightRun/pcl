@@ -55,11 +55,11 @@ namespace pcl
         public:
             typedef PointXYZ PointType;
             typedef PointXYZ NormalType;
-			typedef struct { PointXYZ axis_x, axis_y, axis_z; } IRFType;
+            typedef ReferenceFrame ReferenceFrameType;
 
             typedef DeviceArray< PointType> PointCloud;
             typedef DeviceArray<NormalType> Normals;
-			typedef DeviceArray<IRFType> IRF;
+            typedef DeviceArray<ReferenceFrameType> ReferenceFrames;
             typedef DeviceArray<int> Indices;
 
             Feature();
@@ -91,16 +91,16 @@ namespace pcl
         };
 
         ////////////////////////////////////////////////////////////////////////////////////////////  
-        /** \brief @b Feature represents the base feature class that takes IRF as input also.  */
+        /** \brief @b Feature represents the base feature class that takes LocalReferenceFrame as input also.  */
 
-		struct PCL_EXPORTS FeatureFromIRF : public Feature
-		{
-		public:
+        struct PCL_EXPORTS FeatureWithLocalReferenceFrames : public Feature
+        {
+        public:
 
-			void setInputIRF(const IRF& irf);
-		protected:
-			IRF irf_;
-		};
+            void setInputReferenceFrames(const ReferenceFrames& frames);
+        protected:
+            ReferenceFrames frames_;
+        };
  
         ////////////////////////////////////////////////////////////////////////////////////////////  
         /** \brief @b Class for normal estimation.  */
@@ -118,22 +118,22 @@ namespace pcl
             static void computeNormals(const PointCloud& cloud, const NeighborIndices& nn_indices, Normals& normals);
             static void flipNormalTowardsViewpoint(const PointCloud& cloud, float vp_x, float vp_y, float vp_z, Normals& normals);            
             static void flipNormalTowardsViewpoint(const PointCloud& cloud, const Indices& indices, float vp_x, float vp_y, float vp_z, Normals& normals);
-        private:              
+        private:
             float vpx_, vpy_, vpz_;
             NeighborIndices nn_indices_;
         };        
  
         ////////////////////////////////////////////////////////////////////////////////////////////  
-        /** \brief @b Class for IRF estimation.  */
-        class PCL_EXPORTS IRFEstimation : public Feature
+        /** \brief @b Class for ISSReferenceFrame estimation.  */
+        class PCL_EXPORTS ISSReferenceFrameEstimation : public Feature
         {
         public:
-            typedef Feature::IRFType IRFType; 
+            typedef Feature::ReferenceFrameType IRFType; 
 
-            IRFEstimation();
-            void compute(IRF& irf);
+            ISSRefreenceFrameEstimation();
+            void compute(ReferenceFrames& frames);
 
-            static void computeIRF(const PointCloud& cloud, const NeighborIndices& nn_indices, IRF& irf);
+            static void computeFrames(const PointCloud& cloud, const NeighborIndices& nn_indices, ReferenceFrames& frames);
         private:              
             NeighborIndices nn_indices_;
         };        

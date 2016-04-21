@@ -58,7 +58,7 @@ namespace pcl
 {
 	namespace device
 	{
-		struct IRFEstimator
+		struct ISSReferenceFrameEstimator
 		{
 			enum
 			{
@@ -77,7 +77,7 @@ namespace pcl
 			const int *sizes;
 			const PointType *points;
 
-			PtrSz<IRFType> irfs;
+			PtrSz<IRFType> frames;
 
 			__device__ __forceinline__ void operator()() const
 			{
@@ -96,10 +96,10 @@ namespace pcl
 				if (size < MIN_NEIGHBOORS)
 				{
 					const float NaN = numeric_limits<float>::quiet_NaN();
-					IRFType irf;
-					irf.axis_x = irf.axis_y = irf.axis_z = make_float3(NaN, NaN, NaN);
+					IRFType frame;
+          for(int i = 0; i < 12; i++) frame.rf[i] = NaN;
 					if (lane == 0) {
-						irfs.data[idx] = irf;
+						frames.data[idx] = frame;
 					}
 				}
 
@@ -165,20 +165,13 @@ namespace pcl
 
 					IRFType output;
 			
-					// Axis-X
 					// The normalization is not necessary, since the eigenvectors from Eigen33 are already normalized
-					output.axis_x.x = evecs[2].x;
-					output.axis_x.y = evecs[2].y;
-					output.axis_x.z = evecs[2].z;
-
-					// Axis-Y
-					// The normalization is not necessary, since the eigenvectors from Eigen33 are already normalized
-					output.axis_x.x = evecs[1].x;
-					output.axis_x.y = evecs[1].y;
-					output.axis_x.z = evecs[1].z;
-
-					// Axis-Z
-					output.axis_z = output.axis_x ^ output.axis_y;
+          // TODO: check float3
+          for(int d = 0; d < 3; d++) {
+              output.x_axis[d] = evecs[2][d];
+              output.y_axis[d] = evecs[1][d];
+              output.z_axis[d] = evecs[0][d];
+          }
 
 					irfs.data[idx] = output;
 				}
@@ -193,22 +186,22 @@ namespace pcl
 
 		};
 
-		__global__ void EstimateIRFKernel(const IRFEstimator est) { est(); }
+		__global__ void EstimateIRFKernel(const ISSReferenceFrameEstimator est) { est(); }
 	}
 }
 
-void pcl::device::computeIRF(const PointCloud& cloud, const NeighborIndices& nn_indices, Normals& normals)
+void pcl::device::computeISSReferenceFrames(const PointCloud& cloud, const NeighborIndices& nn_indices, ReferenceFrames& frames)
 {
-	IRFEstimator est;
+	ISSReferenceFrameEstimator est;
 	est.indices = nn_indices;	// convert NieghborIndices to PtrStep<int>
 	est.sizes = nn_indices.sizes;
 	est.points = cloud;
-	est.normals = normals;
+	est.frames = frames;
 
 	//printFuncAttrib(EstimateNormaslKernel);
 
 	int block = IRFEstimator::CTA_SIZE;
-	int grid = divUp((int)normals.size(), IRFEstimator::WAPRS);
+	int grid = divUp((int)frames.size(), ISSReferenceFrameEstimator::WAPRS);
 	EstimateNormaslKernel << <grid, block >> >(est);
 
 	cudaSafeCall(cudaGetLastError());

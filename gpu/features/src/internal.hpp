@@ -59,14 +59,9 @@ namespace pcl
         typedef float4 NormalType;
         typedef float4 PointXYZRGB;
 
-		struct IRFType
-		{
-			float3 axis_x, axis_y, axis_z;
-		};
-
         typedef DeviceArray< PointType> PointCloud;        
         typedef DeviceArray<NormalType> Normals;
-		typedef DeviceArray<IRFType> IRF;
+        typedef DeviceArray<ReferenceFrame> ReferenceFrames;
         typedef DeviceArray<int> Indices;
 
         typedef DeviceArray< PointType> PointXYZRGBCloud;
@@ -115,8 +110,8 @@ namespace pcl
             float pc2;
         };
 
-		// intrinsic reference frame estimation
-		void computeIRF(const PointCloud& cloud, const NeighborIndices& nn_indices, IRF& irf);
+        // ISS reference frame estimation
+        void computeISSReferenceFrames(const PointCloud& cloud, const NeighborIndices& nn_indices, ReferenceFrames& frames);
 
         // normals estimation
         void computeNormals(const PointCloud& cloud, const NeighborIndices& nn_indices, Normals& normals);

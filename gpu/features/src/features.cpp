@@ -58,8 +58,8 @@ void pcl::gpu::Feature::setRadiusSearch(float radius, int max_results) { radius_
 void pcl::gpu::FeatureFromNormals::setInputNormals(const Normals& normals)  { normals_ = normals; }
 
 /////////////////////////////////////////////////////////////////////////
-/// FeatureFromIRF
-void pcl::gpu::FeatureFromIRF::setInputIRF(const IRF& irf)  { irf_ = irf; }
+/// FeatureWithLocalReferenceFrames
+void pcl::gpu::FeatureWithLocalReferenceFrames::setInputFrames(const ReferenceFrames& frames)  { frames_ = frames; }
 
 
 /////////////////////////////////////////////////////////////////////////
