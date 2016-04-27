@@ -40,7 +40,7 @@
 #include "pcl/gpu/utils/device/warp.hpp"
 #include "pcl/gpu/utils/device/funcattrib.hpp"
 
-#include "pcl/gpu/features/device/eigen.hpp"
+#include "pcl/gpu/utils/device/eigen.hpp"
 
 using namespace pcl::gpu;
 

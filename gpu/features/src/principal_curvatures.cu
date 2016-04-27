@@ -39,7 +39,7 @@
 #include "pcl/gpu/utils/device/warp.hpp"
 #include "pcl/gpu/utils/safe_call.hpp"
 #include "pcl/gpu/utils/device/block.hpp"
-#include "pcl/gpu/features/device/eigen.hpp"
+#include "pcl/gpu/utils/device/eigen.hpp"
 
 //#define TWO_STEP_ALG
 
