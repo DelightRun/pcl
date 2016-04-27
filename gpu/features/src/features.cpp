@@ -59,8 +59,7 @@ void pcl::gpu::FeatureFromNormals::setInputNormals(const Normals& normals)  { no
 
 /////////////////////////////////////////////////////////////////////////
 /// FeatureWithLocalReferenceFrames
-void pcl::gpu::FeatureWithLocalReferenceFrames::setInputFrames(const ReferenceFrames& frames)  { frames_ = frames; }
-
+void pcl::gpu::FeatureWithLocalReferenceFrames::setInputReferenceFrames(const ReferenceFrames& frames)  { frames_ = frames; }
 
 /////////////////////////////////////////////////////////////////////////
 /// NormalEstimation
@@ -127,20 +126,20 @@ void pcl::gpu::NormalEstimation::compute(Normals& normals)
 }
 
 /////////////////////////////////////////////////////////////////////////
-/// IRFEstimation
-pcl::gpu::IRFEstimation::IRFEstimation() {}
+/// ISSReferenceFrameEstimation
+pcl::gpu::ISSReferenceFrameEstimation::ISSReferenceFrameEstimation() {}
 
-void pcl::gpu::IRFEstimation::computeIRF(const PointCloud& cloud, const NeighborIndices& nn_indices, IRF& irf)
+void pcl::gpu::ISSReferenceFrameEstimation::computeFrames(const PointCloud& cloud, const NeighborIndices& nn_indices, ReferenceFrames& frames)
 {
-	irf.create(nn_indices.neighboors_size());
+	frames.create(nn_indices.neighboors_size());
 
 	const device::PointCloud& c = (const device::PointCloud&)cloud;
-	device::IRF& i = (device::IRF&)irf;
+	device::ReferenceFrames& f = (device::ReferenceFrames&)frames;
 
-	device::computeIRF(c, nn_indices, i);
+	device::computeISSReferenceFrames(c, nn_indices, f);
 }
 
-void pcl::gpu::IRFEstimation::compute(IRF& irf)
+void pcl::gpu::ISSReferenceFrameEstimation::compute(ReferenceFrames& frames)
 {
 	assert(!cloud_.empty());
 
@@ -152,12 +151,12 @@ void pcl::gpu::IRFEstimation::compute(IRF& irf)
 	if (indices_.empty() || (!indices_.empty() && indices_.size() == cloud_.size()))
 	{
 		octree_.radiusSearch(cloud_, radius_, max_results_, nn_indices_);
-		computeIRF(surface, nn_indices_, irf);
+		computeFrames(surface, nn_indices_, frames);
 	}
 	else
 	{
 		octree_.radiusSearch(cloud_, indices_, radius_, max_results_, nn_indices_);
-		computeIRF(surface, nn_indices_, irf);
+		computeFrames(surface, nn_indices_, frames);
 	}
 }
 

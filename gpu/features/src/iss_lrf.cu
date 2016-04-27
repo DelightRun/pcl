@@ -77,7 +77,7 @@ namespace pcl
 			const int *sizes;
 			const PointType *points;
 
-			PtrSz<IRFType> frames;
+			PtrSz<ReferenceFrameType> frames;
 
 			__device__ __forceinline__ void operator()() const
 			{
@@ -87,7 +87,7 @@ namespace pcl
 				int warp_idx = Warp::id();
 				int idx = blockIdx.x * WAPRS + warp_idx;	// index of central point / current point of which normal will be computed
 
-				if (idx >= irfs.size)
+				if (idx >= frames.size)
 					return;
 
 				int size = sizes[idx];	// number of central point's neighbors
@@ -96,8 +96,8 @@ namespace pcl
 				if (size < MIN_NEIGHBOORS)
 				{
 					const float NaN = numeric_limits<float>::quiet_NaN();
-					IRFType frame;
-          for(int i = 0; i < 12; i++) frame.rf[i] = NaN;
+					ReferenceFrameType frame;
+					for(int i = 0; i < 9; i++) frame.rf[i] = NaN;
 					if (lane == 0) {
 						frames.data[idx] = frame;
 					}
@@ -163,17 +163,14 @@ namespace pcl
 					eigen33.compute(tmp, vec_tmp, evecs, evals);
 					//evecs[0] - eigenvector with the lowerst eigenvalue
 
-					IRFType output;
+					ReferenceFrameType output;
 			
 					// The normalization is not necessary, since the eigenvectors from Eigen33 are already normalized
-          // TODO: check float3
-          for(int d = 0; d < 3; d++) {
-              output.x_axis[d] = evecs[2][d];
-              output.y_axis[d] = evecs[1][d];
-              output.z_axis[d] = evecs[0][d];
-          }
+					output.x_axis = evecs[2];
+					output.y_axis = evecs[1];
+					output.z_axis = evecs[0];
 
-					irfs.data[idx] = output;
+					frames.data[idx] = output;
 				}
 			}
 
@@ -186,7 +183,7 @@ namespace pcl
 
 		};
 
-		__global__ void EstimateIRFKernel(const ISSReferenceFrameEstimator est) { est(); }
+		__global__ void EstimateISSReferenceFrameKernel(const ISSReferenceFrameEstimator est) { est(); }
 	}
 }
 
@@ -200,9 +197,9 @@ void pcl::device::computeISSReferenceFrames(const PointCloud& cloud, const Neigh
 
 	//printFuncAttrib(EstimateNormaslKernel);
 
-	int block = IRFEstimator::CTA_SIZE;
+	int block = ISSReferenceFrameEstimator::CTA_SIZE;
 	int grid = divUp((int)frames.size(), ISSReferenceFrameEstimator::WAPRS);
-	EstimateNormaslKernel << <grid, block >> >(est);
+	EstimateISSReferenceFrameKernel << <grid, block >> >(est);
 
 	cudaSafeCall(cudaGetLastError());
 	cudaSafeCall(cudaDeviceSynchronize());

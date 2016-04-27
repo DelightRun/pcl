@@ -59,21 +59,27 @@ namespace pcl
         typedef float4 NormalType;
         typedef float4 PointXYZRGB;
 
-        typedef DeviceArray< PointType> PointCloud;        
+		struct ReferenceFrameType { 
+			union {
+				float rf[12];	//align to 16
+				struct {
+					float3 x_axis;
+					float3 y_axis; 
+					float3 z_axis;
+				};
+			};
+		};
+
+        typedef DeviceArray<PointType> PointCloud;        
         typedef DeviceArray<NormalType> Normals;
-        typedef DeviceArray<ReferenceFrame> ReferenceFrames;
+        typedef DeviceArray<ReferenceFrameType> ReferenceFrames;
         typedef DeviceArray<int> Indices;
 
-        typedef DeviceArray< PointType> PointXYZRGBCloud;
+        typedef DeviceArray<PointType> PointXYZRGBCloud;
 
 		template <int N> struct Histogram
 		{
 			float histogram[N];
-		};
-
-		template <int L, int N> struct ISSignature
-		{
-			float features[1 + (L - 1)*N];
 		};
 
 		typedef Histogram<125> PFHSignature125;

@@ -57,7 +57,7 @@ namespace pcl
             typedef PointXYZ NormalType;
             typedef ReferenceFrame ReferenceFrameType;
 
-            typedef DeviceArray< PointType> PointCloud;
+            typedef DeviceArray<PointType> PointCloud;
             typedef DeviceArray<NormalType> Normals;
             typedef DeviceArray<ReferenceFrameType> ReferenceFrames;
             typedef DeviceArray<int> Indices;
@@ -128,9 +128,9 @@ namespace pcl
         class PCL_EXPORTS ISSReferenceFrameEstimation : public Feature
         {
         public:
-            typedef Feature::ReferenceFrameType IRFType; 
+            typedef Feature::ReferenceFrameType ReferenceFrameType; 
 
-            ISSRefreenceFrameEstimation();
+            ISSReferenceFrameEstimation();
             void compute(ReferenceFrames& frames);
 
             static void computeFrames(const PointCloud& cloud, const NeighborIndices& nn_indices, ReferenceFrames& frames);

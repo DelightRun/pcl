@@ -44,7 +44,7 @@ namespace pcl
 {
     namespace device
     {       
-	__device__ __host__ __forceinline__ float3 operator/(const float3& vec, float val)
+		__device__ __host__ __forceinline__ float3 operator/(const float3& vec, float val)
         {
             return make_float3(vec.x/val, vec.y/val, vec.z/val);
         }
