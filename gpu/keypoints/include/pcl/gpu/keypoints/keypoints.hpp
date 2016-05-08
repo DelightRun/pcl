@@ -37,76 +37,76 @@
 #ifndef _PCL_GPU_KEYPOINTS_HPP_
 #define _PCL_GPU_KEYPOINTS_HPP_
 
+#include <pcl/gpu/containers/device_array.h>
 #include <pcl/pcl_macros.h>
 #include <pcl/point_types.h>
-#include <pcl/gpu/containers/device_array.h>
 #include <pcl/gpu/octree/device_format.hpp>
 #include <pcl/gpu/octree/octree.hpp>
 
 namespace pcl
 {
-namespace gpu
-{
-////////////////////////////////////////////////////////////////////////////////////////////
-/** \brief @b Keypoints represents the base keypoints class.  */
+    namespace gpu
+    {
+        ////////////////////////////////////////////////////////////////////////////////////////////
+        /** \brief @b Keypoints represents the base keypoints class.  */
 
-struct PCL_EXPORTS Keypoints
-{
-  public:
-    typedef PointXYZ PointType;
-    typedef PointXYZ NormalType;
+        struct PCL_EXPORTS Keypoints
+        {
+          public:
+            typedef PointXYZ PointType;
+            typedef PointXYZ NormalType;
 
-    typedef DeviceArray<PointType> PointCloud;
-    typedef DeviceArray<NormalType> Normals;
+            typedef DeviceArray<PointType> PointCloud;
+            typedef DeviceArray<NormalType> Normals;
 
-    typedef DeviceArray<int> Indices;
-    typedef DeviceArray<bool> EdgePoints;
+            typedef DeviceArray<int> Indices;
+            typedef DeviceArray<bool> EdgePoints;
 
-    Keypoints();
+            Keypoints();
 
-    void setInputCloud(const PointCloud &cloud);
-    void setSearchSurface(const PointCloud &surface);
-    void setIndices(const Indices &indices);
-    void setRadiusSearch(float radius, int max_results);
+            void setInputCloud(const PointCloud &cloud);
+            void setSearchSurface(const PointCloud &surface);
+            void setIndices(const Indices &indices);
+            void setRadiusSearch(float radius, int max_results);
 
-  protected:
-    PointCloud cloud_;
-    PointCloud surface_;
-    Indices indices_;
-    float radius_;
-    int max_results_;
+          protected:
+            PointCloud cloud_;
+            PointCloud surface_;
+            Indices indices_;
+            float radius_;
+            int max_results_;
 
-    Octree octree_;
-};
+            Octree octree_;
+        };
 
-struct PCL_EXPORTS ISSKeypoint3D : Keypoints
-{
-  public:
-    ISSKeypoint3D(double salient_radius = 0.0001);
+        struct PCL_EXPORTS ISSKeypoint3D : Keypoints
+        {
+          public:
+            ISSKeypoint3D(double salient_radius = 0.0001);
 
-    void setSalientRadius(double salient_radius);
-    void setNonMaxRadius(double non_max_radius);
-    void setThreshold21(double gamma_21);
-    void setThreshold32(double gamma_32);
-    void setMinNeighbors(double min_neighbors);
-    void setEdgePoints(const EdgePoints &edge_points);
+            void setSalientRadius(double salient_radius);
+            void setNonMaxRadius(double non_max_radius);
+            void setThreshold21(double gamma_21);
+            void setThreshold32(double gamma_32);
+            void setMinNeighbors(double min_neighbors);
+            void setEdgePoints(const EdgePoints &edge_points);
 
-    void detectPoints(PointCloud &output);  // TODO: 寻找合适的输出形式
-  private:
-    NeighborIndices nn_indices_, nn_indices2_;
+            void detectPoints(PointCloud &output);  // TODO: 寻找合适的输出形式
+          private:
+            NeighborIndices nn_indices_, nn_indices2_;
 
-    EdgePoints edge_points_;
+            EdgePoints edge_points_;
 
-    float salient_radius_;
-    float non_max_radius_;
-    float border_radius_;
+            float salient_radius_;
+            float non_max_radius_;
+            float border_radius_;
 
-    float gamma_21_;
-    float gamma_32_;
+            float gamma_21_;
+            float gamma_32_;
 
-    int min_neighbors_;
-};
-};
+            int min_neighbors_;
+        };
+    };
 };
 
 #endif /* _PCL_GPU_KEYPOINTS_HPP */
