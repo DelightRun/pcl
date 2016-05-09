@@ -80,7 +80,6 @@ namespace pcl
             const int min_neighboors;
             const int* sizes;
             const PointType* points;
-            const bool* border_points;
 
             const float threshold21, threshold32;
 
@@ -100,7 +99,7 @@ namespace pcl
                 int size = sizes[idx];  // number of central point's neighbors
                 int lane = Warp::laneId();
 
-                if (border_points[idx] || size < MIN_NEIGHBOORS || size < min_neighboors)
+                if (size < MIN_NEIGHBOORS || size < min_neighboors)
                 {
                     if (lane == 0) max_eigen_value[idx] = -1.0;
                     return;
@@ -249,7 +248,7 @@ namespace pcl
 }
 
 void pcl::device::detectISSKeypoint3D(
-    const PointCloud& cloud, const int min_neighboors, const BorderPoints border_points,
+    const PointCloud& cloud, const int min_neighboors,
     const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
     const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
     IsKeypoint is_keypoint)
@@ -263,7 +262,6 @@ void pcl::device::detectISSKeypoint3D(
     mevc.indices = nn_indices;  // convert NieghborIndices to PtrStep<int>
     mevc.sizes = nn_indices.sizes;
     mevc.points = cloud;
-    mevc.border_points = border_points;
     mevc.max_eigen_value = max_eigen_value;
 
     int block = MaxEigenValueCalculator::CTA_SIZE;    // number of threads in each block

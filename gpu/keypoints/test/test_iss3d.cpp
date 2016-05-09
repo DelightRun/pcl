@@ -61,8 +61,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_1)
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Salient Radius: " << source.salient_radius << endl;
     cout << "Non Max Radius: " << source.non_max_radius << endl;
-    cout << "Normal Radius: " << source.normal_radius << endl;
-    cout << "Border Radius: " << source.border_radius << endl;
     cout << "Max_elems: " << source.max_elements << endl;
 
     cout << "!indices, !surface" << endl;
@@ -78,8 +76,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_1)
     iss_detector.setSearchMethod(pcl::search::KdTree<PointXYZ>::Ptr(iss_detectorw pcl::search::KdTree<PointXYZ>));
     iss_detector.setSalientRadius(source.salient_radius);
     iss_detector.setNonMaxRadius(source.non_max_radius);
-    iss_detector.setNormalRadius(source.normal_radius);
-    iss_detector.setBorderRadius(source.border_raidus);
     // iss_detector.setSearchSurface(source.surface);
     // iss_detector.setIndices(source.indices);
 
@@ -101,7 +97,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_1)
     iss_detector_device.setNonMaxRadius(source.non_max_radius);
     // iss_detector_device.setSearchSurface(surface_device);
     // iss_detector_device.setIndices(indices_device);
-    // TODO: iss_detector_device.setBorderPoints (source.border_points);
 
     pcl::gpu::ISSKeypoint3D::PointXYZ keypoints_device;
     iss_detector_device.detectKeypoints(keypoints_device);
@@ -128,8 +123,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_2)
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Salient Radius: " << source.salient_radius << endl;
     cout << "Non Max Radius: " << source.non_max_radius << endl;
-    cout << "Normal Radius: " << source.normal_radius << endl;
-    cout << "Border Radius: " << source.border_radius << endl;
     cout << "Max_elems: " << source.max_elements << endl;
 
     cout << "indices, !surface" << endl;
@@ -145,8 +138,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_2)
     iss_detector.setSearchMethod(pcl::search::KdTree<PointXYZ>::Ptr(iss_detectorw pcl::search::KdTree<PointXYZ>));
     iss_detector.setSalientRadius(source.salient_radius);
     iss_detector.setNonMaxRadius(source.non_max_radius);
-    iss_detector.setNormalRadius(source.normal_radius);
-    iss_detector.setBorderRadius(source.border_raidus);
     // iss_detector.setSearchSurface(source.surface);
     iss_detector.setIndices(source.indices);
 
@@ -168,7 +159,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_2)
     iss_detector_device.setNonMaxRadius(source.non_max_radius);
     // iss_detector_device.setSearchSurface(surface_device);
     iss_detector_device.setIndices(indices_device);
-    // TODO: iss_detector_device.setBorderPoints (source.border_points);
 
     pcl::gpu::ISSKeypoint3D::PointXYZ keypoints_device;
     iss_detector_device.detectKeypoints(keypoints_device);
@@ -195,8 +185,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_3)
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Salient Radius: " << source.salient_radius << endl;
     cout << "Non Max Radius: " << source.non_max_radius << endl;
-    cout << "Normal Radius: " << source.normal_radius << endl;
-    cout << "Border Radius: " << source.border_radius << endl;
     cout << "Max_elems: " << source.max_elements << endl;
 
     cout << "!indices, surface" << endl;
@@ -212,8 +200,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_3)
     iss_detector.setSearchMethod(pcl::search::KdTree<PointXYZ>::Ptr(iss_detectorw pcl::search::KdTree<PointXYZ>));
     iss_detector.setSalientRadius(source.salient_radius);
     iss_detector.setNonMaxRadius(source.non_max_radius);
-    iss_detector.setNormalRadius(source.normal_radius);
-    iss_detector.setBorderRadius(source.border_raidus);
     iss_detector.setSearchSurface(source.surface);
     // iss_detector.setIndices(source.indices);
 
@@ -235,7 +221,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_3)
     iss_detector_device.setNonMaxRadius(source.non_max_radius);
     iss_detector_device.setSearchSurface(surface_device);
     // iss_detector_device.setIndices(indices_device);
-    // TODO: iss_detector_device.setBorderPoints (source.border_points);
 
     pcl::gpu::ISSKeypoint3D::PointXYZ keypoints_device;
     iss_detector_device.detectKeypoints(keypoints_device);
@@ -262,8 +247,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_4)
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Salient Radius: " << source.salient_radius << endl;
     cout << "Non Max Radius: " << source.non_max_radius << endl;
-    cout << "Normal Radius: " << source.normal_radius << endl;
-    cout << "Border Radius: " << source.border_radius << endl;
     cout << "Max_elems: " << source.max_elements << endl;
 
     cout << "indices, surface" << endl;
@@ -279,8 +262,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_4)
     iss_detector.setSearchMethod(pcl::search::KdTree<PointXYZ>::Ptr(iss_detectorw pcl::search::KdTree<PointXYZ>));
     iss_detector.setSalientRadius(source.salient_radius);
     iss_detector.setNonMaxRadius(source.non_max_radius);
-    iss_detector.setNormalRadius(source.normal_radius);
-    iss_detector.setBorderRadius(source.border_raidus);
     iss_detector.setSearchSurface(source.surface);
     iss_detector.setIndices(source.indices);
 
@@ -302,7 +283,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_4)
     iss_detector_device.setNonMaxRadius(source.non_max_radius);
     iss_detector_device.setSearchSurface(surface_device);
     iss_detector_device.setIndices(indices_device);
-    // TODO: iss_detector_device.setBorderPoints (source.border_points);
 
     pcl::gpu::ISSKeypoint3D::PointXYZ keypoints_device;
     iss_detector_device.detectKeypoints(keypoints_device);
