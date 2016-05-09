@@ -44,13 +44,13 @@
 
 #undef PI
 #ifndef PI
-    #define PI 3.1415926535897931f               
+#define PI 3.1415926535897931f
 #endif
 
 namespace pcl
 {
     namespace device
-    {   
+    {
         using pcl::gpu::DeviceArray;
         using pcl::gpu::DeviceArray2D;
         using pcl::gpu::NeighborIndices;
@@ -59,15 +59,17 @@ namespace pcl
         typedef float4 NormalType;
         typedef float4 PointXYZRGB;
 
-        typedef DeviceArray<PointType> PointCloud;        
+        typedef DeviceArray<PointType> PointCloud;
         typedef DeviceArray<int> Indices;
-		typedef DeviceArray<bool> IsKeypoint;
+        typedef DeviceArray<bool> IsKeypoint;
 
         typedef DeviceArray<PointType> PointXYZRGBCloud;
 
-		// ISS keypoints estimation
-		// TODO:
-        void detectISSKeypoints(const PointCloud& cloud, const NeighborIndices& nn_indices, IsKeypoint& is_keypoint);
-}
+        // ISS keypoints estimation
+        void pcl::device::detectISSKeypoint3D(
+            const PointCloud& cloud, const int min_neighboors, const BorderPoints border_points,
+            const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
+            const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
+            IsKeypoint is_keypoint);
 
 #endif /* PCL_GPU_FEATURES_INTERNAL_HPP_ */

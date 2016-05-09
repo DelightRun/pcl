@@ -76,27 +76,29 @@ void pcl::gpu::ISSKeypoint3D::setNonMaxRadius(double non_max_radius) { non_max_r
 void pcl::gpu::ISSKeypoint3D::setThreshold21(double gamma_21) { gamma_21_ = gamma_21; }
 void pcl::gpu::ISSKeypoint3D::setThreshold32(double gamma_32) { gamma_32_ = gamma_32; }
 void pcl::gpu::ISSKeypoint3D::setMinNeighbors(double min_neighbors) { min_neighbors_ = min_neighbors; }
-void pcl::gpu::ISSKeypoint3D::setEdgePoints(const EdgePoints &edge_points) { edge_points_ = edge_points; }
+void pcl::gpu::ISSKeypoint3D::setBorderPoints(const BorderPoints &border_points) { border_points_ = border_points; }
 
-void pcl::gpu::ISSKeypoint3D::detectKeypoints(PointCloud &output)
+void pcl::gpu::ISSKeypoint3D::detectKeypoints(PointCloud& output)
 {
-    PointCloud &surface = surface_.empty() ? cloud_ : surface_;
+    PointCloud& surface = surface_.empty() ? cloud_ : surface_;
 
     octree_.setCloud(surface);
     octree_.build();
-
-    assert(cloud_.size() == normals_.size());
 
     if (indices_.empty() || (!indices_.empty() && indices_.size() == cloud_.size()))
     {
         octree_.radiusSearch(cloud_, salient_radius_, max_results_, nn_indices_);
         octree_.radiusSearch(cloud_, non_max_radius_, max_results_, nn_indices2_);
-        // TODO: detect keypoints
     }
     else
     {
         octree.radiusSearch(cloud_, indices_, salient_radius_, max_results_, nn_indices_);
         octree_.radiusSearch(cloud_, indices_, non_max_radius_, max_results_, nn_indices2_);
-        // TODO: detect keypoints
     }
+
+    IsKeypoint is_keypoint_;
+    is_keypoint_.create(cloud_.size());
+    device::detectISSKeypoint3D(cloud_, min_neighboors, border_points_, nn_indices, nn_indices2, is_keypoint_);
+
+    // TODO: summary result
 }
