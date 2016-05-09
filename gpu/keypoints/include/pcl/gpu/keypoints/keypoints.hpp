@@ -60,7 +60,6 @@ namespace pcl
             typedef DeviceArray<NormalType> Normals;
 
             typedef DeviceArray<int> Indices;
-            typedef DeviceArray<bool> BorderPoints;
 
             Keypoints();
 
@@ -89,13 +88,10 @@ namespace pcl
             void setThreshold21(double gamma_21);
             void setThreshold32(double gamma_32);
             void setMinNeighbors(double min_neighbors);
-            void setBorderPoints(const BorderPoints &border_points);
 
             void detectKeypoints(PointCloud &output);  // TODO: 寻找合适的输出形式
           private:
             NeighborIndices nn_indices_, nn_indices2_;
-
-            BorderPoints border_points_;
 
             float salient_radius_;
             float non_max_radius_;
