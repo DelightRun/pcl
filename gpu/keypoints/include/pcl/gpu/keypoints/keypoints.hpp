@@ -89,9 +89,9 @@ namespace pcl
             void setThreshold21(double gamma_21);
             void setThreshold32(double gamma_32);
             void setMinNeighbors(double min_neighbors);
-            void setBorderPoints(const EdgePoints &edge_points);
+            void setBorderPoints(const BorderPoints &border_points);
 
-            void detectPoints(PointCloud &output);  // TODO: 寻找合适的输出形式
+            void detectKeypoints(PointCloud &output);  // TODO: 寻找合适的输出形式
           private:
             NeighborIndices nn_indices_, nn_indices2_;
 

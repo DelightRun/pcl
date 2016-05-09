@@ -266,8 +266,8 @@ void pcl::device::detectISSKeypoint3D(
     mevc.border_points = border_points;
     mevc.max_eigen_value = max_eigen_value;
 
-    int block = MaxEigenValueCalculator::CTA_SIZE;
-    int grid = divUp((int)max_eigen_value.size(), MaxEigenValueCalculator::WAPRS);
+    int block = MaxEigenValueCalculator::CTA_SIZE;    // number of threads in each block
+    int grid = divUp((int)max_eigen_value.size(), MaxEigenValueCalculator::WAPRS);    // number of blocks in each grid
     MaxEigenValueCalculatorKernel<<<grid, block>>>(mevc);
 
     cudaSafeCall(cudaGetLastError());
