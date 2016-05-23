@@ -81,7 +81,7 @@ namespace pcl
         struct PCL_EXPORTS ISSKeypoint3D : Keypoints
         {
           public:
-            ISSKeypoint3D(double salient_radius = 0.0001);
+            ISSKeypoint3D(double salient_radius);
 
             void setSalientRadius(double salient_radius);
             void setNonMaxRadius(double non_max_radius);
