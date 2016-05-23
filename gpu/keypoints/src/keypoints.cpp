@@ -96,9 +96,5 @@ void pcl::gpu::ISSKeypoint3D::detectKeypoints(PointCloud& output)
         octree_.radiusSearch(cloud_, indices_, non_max_radius_, max_results_, nn_indices2_);
     }
 
-    IsKeypoint is_keypoint_;
-    is_keypoint_.create(cloud_.size());
-    device::detectISSKeypoint3D(cloud_, min_neighboors, nn_indices, nn_indices2, is_keypoint_);
-
-    // TODO: summary result
+    device::detectISSKeypoint3D(cloud_, min_neighboors, nn_indices, nn_indices2, output);
 }

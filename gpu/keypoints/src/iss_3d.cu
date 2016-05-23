@@ -34,6 +34,7 @@
 *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
 */
 
+
 #include "internal.hpp"
 
 #include "pcl/gpu/utils/device/funcattrib.hpp"
@@ -42,7 +43,11 @@
 
 #include "pcl/gpu/utils/device/eigen.hpp"
 
+#include <thrust/copy.h>
+#include <thrust/device_ptr.h>
+
 using namespace pcl::gpu;
+using namespace thrust;
 
 namespace pcl
 {
@@ -154,12 +159,12 @@ namespace pcl
                     eigen33.compute(tmp, vec_tmp, evecs, evals);
                     // evecs[0] - eigenvector with the lowerst eigenvalue
 
-                    gamma21 = evals[1] / evals[0];
-                    gamma32 = evals[2] / evals[1];
+                    float gamma21 = evals.y / evals.x;
+                    float gamma32 = evals.z / evals.y;
                     if (gamma21 < threshold21 || gamma32 < threshold32)
-                        max_eval_buffer[idx] = evals[2];
+                        max_eigen_value.data[idx] = evals.z;
                     else
-                        max_eval_buffer[idx] = -1.;
+                        max_eigen_value.data[idx] = -1.;
                 }
             }
 
@@ -208,9 +213,10 @@ namespace pcl
                 int size = sizes[idx];
                 int lane = Warp::laneId();
 
-                if (max_eigen_value[idx] < 0.0)
+                if (max_eigen_value.data[idx] < 0.0)
                 {
-                    if (lane == 0) is_keypoint[idx] = false;
+                    if (lane == 0)
+                        is_keypoint.data[idx] = false;
                     return;
                 }
 
@@ -223,7 +229,7 @@ namespace pcl
 
                 for (const int* t = ibeg + lane; t < iend; t += Warp::STRIDE)
                 {
-                    if (max_eigen_value[idx] < max_eigen_value[*t]) {
+                    if (max_eigen_value.data[idx] < max_eigen_value.data[*t]) {
                         is_max[tid] = false;
                         break;
                     }
@@ -232,7 +238,7 @@ namespace pcl
                 Warp::reduce(&is_max[tid - lane], logic_and());
 
                 if (lane == 0) 
-                    is_keypoint[idx] = ((max_eigen_value[idx] != -1.) && is_max[tid - lane]);
+                    is_keypoint.data[idx] = is_max[tid - lane]);
             }
         };
 
@@ -245,7 +251,7 @@ void pcl::device::detectISSKeypoint3D(
     const PointCloud& cloud, const int min_neighboors,
     const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
     const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
-    IsKeypoint is_keypoint)
+    PointCloud& keypoints)
 {
     // Step 1. calculate max eigen value of each point
     DeviceArray<float> max_eigen_value;
@@ -266,6 +272,9 @@ void pcl::device::detectISSKeypoint3D(
     cudaSafeCall(cudaDeviceSynchronize());
 
     // Step 2. non-maximum suppression for each point
+    DeviceArray<bool> is_keypoint;
+    is_keypoint.create(cloud.size());
+
     NonMaxSuppressor nms;
     nms.min_neighboors = min_neighboors;
     nms.indices = nn_indices2;
@@ -273,10 +282,20 @@ void pcl::device::detectISSKeypoint3D(
     nms.max_eigen_value = max_eigen_value;
     nms.is_keypoint = is_keypoint;
 
-    int block = NonMaxSuppressor::CTA_SIZE;
-    int grid = divUp((int)is_keypoint.size(), NonMaxSuppressor::WAPRS);
+    block = NonMaxSuppressor::CTA_SIZE;
+    grid = divUp((int)is_keypoint.size(), NonMaxSuppressor::WAPRS);
     NonMaxSuppressorKernel<<<grid, block>>>(nms);
 
     cudaSafeCall(cudaGetLastError());
     cudaSafeCall(cudaDeviceSynchronize());
+
+    // Finally. copy results
+    PointCloud buffer;
+    buffer.create(cloud.size());
+
+    device_ptr<const PointType> cloud_ptr((const PointType*)cloud.ptr());
+    device_ptr<PointType> buffer_ptr(buffer.ptr);
+
+    int count = (int)(thrust::copy_if(clout_ptr, cloud_ptr + cloud.size(), is_keypoint, buffer_ptr, identity<bool>()) - buffer_ptr);
+    keypoints = PointCloud(buffer.ptr(), count);
 }
