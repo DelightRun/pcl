@@ -96,7 +96,8 @@ namespace pcl
 
                 if (size < MIN_NEIGHBOORS || size < min_neighboors)
                 {
-                    if (lane == 0) max_eigen_value[idx] = -1.0;
+                    if (lane == 0)
+                        max_eigen_value.data[idx] = -1.0;
                     return;
                 }
 
