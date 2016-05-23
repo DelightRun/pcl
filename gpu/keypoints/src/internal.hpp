@@ -71,5 +71,7 @@ namespace pcl
             const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
             const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
             IsKeypoint is_keypoint);
+    }
+}
 
 #endif /* PCL_GPU_FEATURES_INTERNAL_HPP_ */
