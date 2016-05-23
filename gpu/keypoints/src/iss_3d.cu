@@ -73,10 +73,10 @@ namespace pcl
 
             PtrStep<int> indices;
             const int min_neighboors;
-            const int* sizes;
+            int* sizes;
             const PointType* points;
 
-            const float threshold21, threshold32;
+            float threshold21, threshold32;
 
             PtrSz<float> max_eigen_value;  // Step 1, return max eigen value of each point
 
@@ -196,7 +196,7 @@ namespace pcl
 
             PtrSz<float> max_eigen_value;
             PtrStep<int> indices;
-            const int min_neighboors;
+            int min_neighboors;
             const int* sizes;
 
             PtrSz<bool> is_keypoint;
@@ -294,8 +294,9 @@ void pcl::device::detectISSKeypoint3D(
     buffer.create(cloud.size());
 
     device_ptr<const PointType> cloud_ptr((const PointType*)cloud.ptr());
-    device_ptr<PointType> buffer_ptr(buffer.ptr);
+    device_ptr<PointType> buffer_ptr(buffer.ptr());
+    device_ptr<bool> is_keypoint_ptr(is_keypoint.ptr());
 
-    int count = (int)(thrust::copy_if(clout_ptr, cloud_ptr + cloud.size(), is_keypoint, buffer_ptr, identity<bool>()) - buffer_ptr);
+    int count = (int)(thrust::copy_if(cloud_ptr, cloud_ptr + cloud.size(), is_keypoint, buffer_ptr, identity<bool>()) - buffer_ptr);
     keypoints = PointCloud(buffer.ptr(), count);
 }
