@@ -34,6 +34,7 @@
 *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
 */
 
+
 #include "internal.hpp"
 
 #include "pcl/gpu/utils/device/funcattrib.hpp"
@@ -42,7 +43,11 @@
 
 #include "pcl/gpu/utils/device/eigen.hpp"
 
+#include <thrust/copy.h>
+#include <thrust/device_ptr.h>
+
 using namespace pcl::gpu;
+using namespace thrust;
 
 namespace pcl
 {
@@ -245,7 +250,7 @@ void pcl::device::detectISSKeypoint3D(
     const PointCloud& cloud, const int min_neighboors,
     const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
     const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
-    IsKeypoint is_keypoint)
+    PointCloud& keypoints)
 {
     // Step 1. calculate max eigen value of each point
     DeviceArray<float> max_eigen_value;
@@ -266,6 +271,9 @@ void pcl::device::detectISSKeypoint3D(
     cudaSafeCall(cudaDeviceSynchronize());
 
     // Step 2. non-maximum suppression for each point
+    DeviceArray<bool> is_keypoint;
+    is_keypoint.create(cloud.size());
+
     NonMaxSuppressor nms;
     nms.min_neighboors = min_neighboors;
     nms.indices = nn_indices2;
@@ -279,4 +287,11 @@ void pcl::device::detectISSKeypoint3D(
 
     cudaSafeCall(cudaGetLastError());
     cudaSafeCall(cudaDeviceSynchronize());
+
+    // Finally. copy results
+    PointCloud buffer;
+    buffer.create(cloud.size());
+
+    int count = (int)(thrust::copy_if(cloud.ptr(), cloud.ptr() + cloud.size(), is_keypoint, buffer.ptr(), identity<bool>()) - buffer.ptr());
+    keypoints = PointCloud(buffer.ptr(), count);
 }

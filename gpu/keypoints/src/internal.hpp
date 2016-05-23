@@ -61,7 +61,6 @@ namespace pcl
 
         typedef DeviceArray<PointType> PointCloud;
         typedef DeviceArray<int> Indices;
-        typedef DeviceArray<bool> IsKeypoint;
 
         typedef DeviceArray<PointType> PointXYZRGBCloud;
 
@@ -70,7 +69,7 @@ namespace pcl
             const PointCloud& cloud, const int min_neighboors,
             const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
             const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
-            IsKeypoint is_keypoint);
+            PointCloud& keypoints);
     }
 }
 
