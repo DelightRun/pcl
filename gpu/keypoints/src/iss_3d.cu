@@ -72,8 +72,8 @@ namespace pcl
             };
 
             PtrStep<int> indices;
-            const int min_neighboors;
-            int* sizes;
+            int min_neighboors;
+            const int* sizes;
             const PointType* points;
 
             float threshold21, threshold32;
@@ -238,7 +238,7 @@ namespace pcl
                 Warp::reduce(&is_max[tid - lane], logic_and());
 
                 if (lane == 0) 
-                    is_keypoint.data[idx] = is_max[tid - lane]);
+                    is_keypoint.data[idx] = is_max[tid - lane];
             }
         };
 
@@ -297,6 +297,6 @@ void pcl::device::detectISSKeypoint3D(
     device_ptr<PointType> buffer_ptr(buffer.ptr());
     device_ptr<bool> is_keypoint_ptr(is_keypoint.ptr());
 
-    int count = (int)(thrust::copy_if(cloud_ptr, cloud_ptr + cloud.size(), is_keypoint, buffer_ptr, identity<bool>()) - buffer_ptr);
+    int count = (int)(thrust::copy_if(cloud_ptr, cloud_ptr + cloud.size(), is_keypoint_ptr, buffer_ptr, identity<bool>()) - buffer_ptr);
     keypoints = PointCloud(buffer.ptr(), count);
 }
