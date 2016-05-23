@@ -67,7 +67,7 @@ namespace pcl
 
         // ISS keypoints estimation
         void pcl::device::detectISSKeypoint3D(
-            const PointCloud& cloud, const int min_neighboors, const BorderPoints border_points,
+            const PointCloud& cloud, const int min_neighboors,
             const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
             const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
             IsKeypoint is_keypoint);
