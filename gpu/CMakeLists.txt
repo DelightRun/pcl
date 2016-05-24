@@ -23,6 +23,6 @@ if(BUILD_GPU AND CUDA_FOUND)
 		add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
 	endforeach(subdir)    
 
-    set(BUILD_GPU_TEST ON CACHE BOOL "Enabled: default" FORCE)
+    set(BUILD_GPU_TESTS ON CACHE BOOL "Enabled: default" FORCE)
 endif()
 
