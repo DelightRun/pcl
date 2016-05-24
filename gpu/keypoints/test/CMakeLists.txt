@@ -5,11 +5,11 @@ if(BUILD_TESTS)
     
     set(pcl_gtest_sources "${PCL_SOURCE_DIR}/test/gtest-1.6.0/src/gtest-all.cc")
 
-    set(the_test_target test_gpu_features)
+    set(the_test_target test_gpu_keypoints)
     
     get_filename_component(DIR "${CMAKE_CURRENT_LIST_FILE}" PATH)
     get_filename_component(INC1 "${DIR}/../../../io/include" REALPATH)
-    get_filename_component(INC2 "${DIR}/../../../features/include" REALPATH)
+    get_filename_component(INC2 "${DIR}/../../../keypoints/include" REALPATH)
     get_filename_component(INC3 "${DIR}/../../../kdtree/include" REALPATH)
     get_filename_component(INC4 "${DIR}/../../../visualization/include" REALPATH)
     get_filename_component(INC5 "${DIR}/../../../common/include" REALPATH)
@@ -24,7 +24,7 @@ if(BUILD_TESTS)
     FILE(GLOB test_src *.cpp *.hpp)
     list(APPEND test_src ${pcl_gtest_sources})
     include_directories("${INC1}" "${INC2}" "${INC3}" "${INC4}" "${INC5}" "${INC6}" "${INC7}" ${VTK_INCLUDE_DIRS})
-    #PCL_ADD_TEST(a_gpu_features_test ${the_test_target} FILES ${test_src} LINK_WITH pcl_gpu_containers pcl_gpu_octree pcl_gpu_features pcl_io pcl_features pcl_visualization pcl_common)
+    PCL_ADD_TEST(a_gpu_keypoints_test ${the_test_target} FILES ${test_src} LINK_WITH pcl_gpu_containers pcl_gpu_octree pcl_gpu_features pcl_io pcl_features pcl_visualization pcl_common ARGUMENTS "${PCL_SOURCE_DIR}/test/office_chair_model.pcd")
     
-    #add_dependencies(${the_test_target} pcl_gpu_octree pcl_gpu_containes pcl_gpu_features pcl_io pcl_features pcl_visualization pcl_common)    
+    add_dependencies(${the_test_target} pcl_gpu_octree pcl_gpu_containes pcl_gpu_keypoints pcl_io pcl_features pcl_visualization pcl_common)    
 endif(BUILD_TESTS)

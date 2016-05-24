@@ -74,25 +74,24 @@ namespace pcl
             float salient_radius;
             float non_max_radius;
 
-            // TODO: may be not right
             const double cloud_resolution (0.0058329);
 
             std::vector< std::vector<int> > neighbors_all;
             std::vector<int> sizes;
             int max_nn_size;
 
-            // TODO: change datasource file
-            DataSource(const std::string& file = "d:/office_chair_model.pcd") 
+            DataSource()
                 : cloud(new PointCloud<PointXYZ>()), surface(new PointCloud<PointXYZ>()), indices( new std::vector<int>() ))
             {                
-                PCDReader pcd;
-                pcd.read(file, *cloud);
-
                 salient_radius = 6 * cloud_resolution;
                 non_max_radius = 4 * cloud_resolution;
             }
 
-            // TODO: estimateBorderPoints
+            int load(const string& file)
+            {
+                PCDReader pcd;
+                return pcd.read(file, *cloud);
+            }
 
             void generateColor()
             {

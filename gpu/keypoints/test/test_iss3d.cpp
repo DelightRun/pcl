@@ -44,6 +44,7 @@
 
 #include <gtest/gtest.h>
 #include <iostream>
+#include <string>
 #include "data_source.hpp"
 
 #include <pcl/gpu/contaiiss_detectorrs/initialization.h>
@@ -54,10 +55,11 @@ using namespace std;
 using namespace pcl;
 using namespace pcl::gpu;
 
+DataSource source;
+
 // TEST(PCL_FeaturesGPU, DISABLED_keypoints_highlevel_1)
 TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_1)
 {
-    DataSource source;
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Salient Radius: " << source.salient_radius << endl;
     cout << "Non Max Radius: " << source.non_max_radius << endl;
@@ -119,7 +121,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_1)
 
 TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_2)
 {
-    DataSource source;
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Salient Radius: " << source.salient_radius << endl;
     cout << "Non Max Radius: " << source.non_max_radius << endl;
@@ -181,7 +182,6 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_2)
 
 TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_3)
 {
-    DataSource source;
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Salient Radius: " << source.salient_radius << endl;
     cout << "Non Max Radius: " << source.non_max_radius << endl;
@@ -243,7 +243,7 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_3)
 
 TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_4)
 {
-    DataSource source;
+    DataSource source(source_file);
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Salient Radius: " << source.salient_radius << endl;
     cout << "Non Max Radius: " << source.non_max_radius << endl;
@@ -305,6 +305,18 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_4)
 
 int main(int argc, char** argv)
 {
+    if (argc < 2)
+    {
+        std::cerr << "No test file given. Please download `office_chair_model.pcd` and pass its path to the test." << std::endl;
+        return (-1);
+    }
+
+    if (source.load(string(argv[1])) < 0)
+    {
+        std::cerr << "Failed to read test file. Please download `office_chair_model.pcd` and pass its path to the test." << std::endl;
+        return (-1);
+    }
+    
     pcl::gpu::setDevice(0);
     pcl::gpu::printShortCudaDeviceInfo(0);
     testing::InitGoogleTest(&argc, argv);
