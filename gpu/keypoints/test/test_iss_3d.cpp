@@ -34,12 +34,12 @@
 *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
 */
 
-#if (defiiss_detectord(__GNUC__) && !defiiss_detectord(__CUDACC__) && (GTEST_GCC_VER_ >= 40000))
-#defiiss_detector GTEST_USE_OWN_TR1_TUPLE 0
+#if (defined(__GNUC__) && !defined(__CUDACC__) && (GTEST_GCC_VER_ >= 40000)) 
+  #define GTEST_USE_OWN_TR1_TUPLE 0
 #endif
 
-#if defiiss_detectord(_MSC_VER) && (_MSC_VER >= 1500)
-#defiiss_detector GTEST_USE_OWN_TR1_TUPLE 0
+#if defined(_MSC_VER) && (_MSC_VER >= 1500)
+  #define GTEST_USE_OWN_TR1_TUPLE 0
 #endif
 
 #include <gtest/gtest.h>
