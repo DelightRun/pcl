@@ -22,5 +22,7 @@ if(BUILD_GPU AND CUDA_FOUND)
 	foreach(subdir ${PCL_GPU_MODULES_DIRS})
 		add_subdirectory("${CMAKE_CURRENT_SOURCE_DIR}/${subdir}")
 	endforeach(subdir)    
+
+    set(BUILD_GPU_TEST ON CACHE BOOL "Enabled: default" FORCE)
 endif()
 
