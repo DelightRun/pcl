@@ -65,8 +65,7 @@ pcl::gpu::ISSKeypoint3D::ISSKeypoint3D(double salient_radius = 0.0001)
       non_max_radius_(0.0),
       gamma_21_(0.975),
       gamma_32_(0.975),
-      min_neighbors_(5),
-      angle_threshold_(static_cast<float>(M_PI) / 2.0f)
+      min_neighbors_(5)
 {
     radius_ = salient_radius_;
 }
@@ -76,7 +75,6 @@ void pcl::gpu::ISSKeypoint3D::setNonMaxRadius(double non_max_radius) { non_max_r
 void pcl::gpu::ISSKeypoint3D::setThreshold21(double gamma_21) { gamma_21_ = gamma_21; }
 void pcl::gpu::ISSKeypoint3D::setThreshold32(double gamma_32) { gamma_32_ = gamma_32; }
 void pcl::gpu::ISSKeypoint3D::setMinNeighbors(double min_neighbors) { min_neighbors_ = min_neighbors; }
-void pcl::gpu::ISSKeypoint3D::setBorderPoints(const BorderPoints &border_points) { border_points_ = border_points; }
 
 void pcl::gpu::ISSKeypoint3D::detectKeypoints(PointCloud& output)
 {
@@ -92,9 +90,12 @@ void pcl::gpu::ISSKeypoint3D::detectKeypoints(PointCloud& output)
     }
     else
     {
-        octree.radiusSearch(cloud_, indices_, salient_radius_, max_results_, nn_indices_);
+        octree_.radiusSearch(cloud_, indices_, salient_radius_, max_results_, nn_indices_);
         octree_.radiusSearch(cloud_, indices_, non_max_radius_, max_results_, nn_indices2_);
     }
 
-    device::detectISSKeypoint3D(cloud_, min_neighboors, nn_indices, nn_indices2, output);
+    const device::PointCloud& c = (const device::PointCloud&)cloud_;
+    device::PointCloud& o = (device::PointCloud&)output;
+
+    device::detectISSKeypoint3D(c, min_neighbors_, nn_indices_, nn_indices2_, o);
 }
