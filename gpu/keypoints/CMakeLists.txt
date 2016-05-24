@@ -32,6 +32,4 @@ if (build)
 
     # Install include files
     PCL_ADD_INCLUDES("${SUBSYS_NAME}" "${SUBSYS_PATH}" ${incs}  ${dev_incs})
-    
-    add_subdirectory(test)
 endif()
