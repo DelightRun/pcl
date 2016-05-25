@@ -16,6 +16,6 @@ if(BUILD_GPU_TESTS)
     
     FILE(GLOB test_src *.cpp *.hpp)
     include_directories(${INC1} ${INC2} ${INC3} ${INC4} ${INC5} ${INC6} ${INC7} ${INC8})
-    PCL_ADD_TEST(gpu_keypoints_test ${the_test_target} FILES ${test_src} LINK_WITH pcl_gtest pcl_gpu_containers pcl_gpu_octree pcl_gpu_keypoints pcl_io pcl_features pcl_visualization pcl_common ARGUMENTS "${PCL_SOURCE_DIR}/test/office_chair_model.pcd")
+    PCL_ADD_TEST(gpu_keypoints_test ${the_test_target} FILES ${test_src} LINK_WITH pcl_gtest pcl_gpu_containers pcl_gpu_octree pcl_gpu_keypoints pcl_io pcl_features pcl_visualization pcl_common ARGUMENTS "${PCL_SOURCE_DIR}/test/bun0.pcd")
     add_dependencies(${the_test_target} pcl_gpu_octree pcl_gpu_containes pcl_gpu_features pcl_gpu_keypoints pcl_io pcl_features pcl_visualization pcl_common pcl_gtest)    
 endif(BUILD_GPU_TESTS)

@@ -47,6 +47,8 @@
 #include <thrust/copy.h>
 #include <thrust/device_ptr.h>
 
+#include <stdio.h>
+
 using namespace pcl::gpu;
 using namespace thrust;
 
@@ -262,7 +264,7 @@ void pcl::device::detectISSKeypoint3D(
 {
     // Step 1. calculate max eigen value of each point
     DeviceArray<float> third_eigen_value;
-    third_eigen_value.create(cloud.size());
+    third_eigen_value.create(nn_indices.neighboors_size());
 
     ThirdEigenValueCalculator mevc;
     mevc.min_neighboors = min_neighboors;
@@ -282,7 +284,7 @@ void pcl::device::detectISSKeypoint3D(
 
     // Step 2. non-maximum suppression for each point
     DeviceArray<bool> is_keypoint;
-    is_keypoint.create(cloud.size());
+    is_keypoint.create(nn_indices2.neighboors_size());
 
     NonMaxSuppressor nms;
     nms.min_neighboors = min_neighboors;

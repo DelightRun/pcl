@@ -58,7 +58,7 @@ using namespace pcl::gpu;
 const char* filepath;
 
 // TEST(PCL_FeaturesGPU, DISABLED_keypoints_highlevel_1)
-TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_1)
+TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel)
 {
     DataSource source(filepath);
     cout << "Cloud size: " << source.cloud->points.size() << endl;
@@ -66,12 +66,7 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_1)
     cout << "Non Max Radius: " << source.non_max_radius << endl;
     cout << "Max_elems: " << source.max_elements << endl;
 
-    cout << "!indices, !surface" << endl;
-
     // source.runCloudViewer();
-
-    // source.generateSurface();
-    // source.generateIndices();
 
     pcl::ISSKeypoint3D<PointXYZ, PointXYZ> iss_detector;
     iss_detector.setNumberOfThreads(1);
@@ -79,215 +74,18 @@ TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_1)
     iss_detector.setSearchMethod (pcl::search::KdTree<PointXYZ>::Ptr (new pcl::search::KdTree<PointXYZ>));
     iss_detector.setSalientRadius(source.salient_radius);
     iss_detector.setNonMaxRadius(source.non_max_radius);
-    // iss_detector.setSearchSurface(source.surface);
-    // iss_detector.setIndices(source.indices);
 
     PointCloud<PointXYZ>::Ptr keypoints(new PointCloud<PointXYZ>());
     iss_detector.compute(*keypoints);
 
     pcl::gpu::ISSKeypoint3D::PointCloud cloud_device;
     cloud_device.upload(source.cloud->points);
-
-    // pcl::gpu::ISSKeypoint3D::PointCloud surface_device;
-    // surface_device.upload(source.surface->points);
-
-    // pcl::gpu::ISSKeypoint3D::Indices indices_device;
-    // indices_device.upload(*source.indices);
 
     pcl::gpu::ISSKeypoint3D iss_detector_device;
     iss_detector_device.setInputCloud(cloud_device);
     iss_detector_device.setRadiusSearch(source.salient_radius, source.max_elements);
     iss_detector_device.setSalientRadius(source.salient_radius);
     iss_detector_device.setNonMaxRadius(source.non_max_radius);
-    // iss_detector_device.setSearchSurface(surface_device);
-    // iss_detector_device.setIndices(indices_device);
-
-    pcl::gpu::ISSKeypoint3D::PointCloud keypoints_device;
-    iss_detector_device.compute(keypoints_device);
-
-    vector<PointXYZ> downloaded;
-    keypoints_device.download(downloaded);
-
-    for (size_t i = 0; i < downloaded.size(); ++i)
-    {
-        PointXYZ cpu = keypoints->points[i];
-
-        PointXYZ gpu = downloaded[i];
-
-        float abs_error = 0.01f;
-        ASSERT_NEAR(cpu.x, gpu.x, abs_error);
-        ASSERT_NEAR(cpu.y, gpu.y, abs_error);
-        ASSERT_NEAR(cpu.z, gpu.z, abs_error);
-    }
-}
-
-TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_2)
-{
-    DataSource source(filepath);
-    cout << "Cloud size: " << source.cloud->points.size() << endl;
-    cout << "Salient Radius: " << source.salient_radius << endl;
-    cout << "Non Max Radius: " << source.non_max_radius << endl;
-    cout << "Max_elems: " << source.max_elements << endl;
-
-    cout << "indices, !surface" << endl;
-
-    // source.runCloudViewer();
-
-    // source.generateSurface();
-    source.generateIndices();
-
-    pcl::ISSKeypoint3D<PointXYZ, PointXYZ> iss_detector;
-    iss_detector.setNumberOfThreads(1);
-    iss_detector.setInputCloud(source.cloud);
-    iss_detector.setSearchMethod (pcl::search::KdTree<PointXYZ>::Ptr (new pcl::search::KdTree<PointXYZ>));
-    iss_detector.setSalientRadius(source.salient_radius);
-    iss_detector.setNonMaxRadius(source.non_max_radius);
-    // iss_detector.setSearchSurface(source.surface);
-    iss_detector.setIndices(source.indices);
-
-    PointCloud<PointXYZ>::Ptr keypoints(new PointCloud<PointXYZ>());
-    iss_detector.compute(*keypoints);
-
-    pcl::gpu::ISSKeypoint3D::PointCloud cloud_device;
-    cloud_device.upload(source.cloud->points);
-
-    // pcl::gpu::ISSKeypoint3D::PointCloud surface_device;
-    // surface_device.upload(source.surface->points);
-
-    pcl::gpu::ISSKeypoint3D::Indices indices_device;
-    indices_device.upload(*source.indices);
-
-    pcl::gpu::ISSKeypoint3D iss_detector_device;
-    iss_detector_device.setInputCloud(cloud_device);
-    iss_detector_device.setSalientRadius(source.salient_radius);
-    iss_detector_device.setNonMaxRadius(source.non_max_radius);
-    // iss_detector_device.setSearchSurface(surface_device);
-    iss_detector_device.setIndices(indices_device);
-
-    pcl::gpu::ISSKeypoint3D::PointCloud keypoints_device;
-    iss_detector_device.compute(keypoints_device);
-    cout << "GPU computed" << endl;
-
-    vector<PointXYZ> downloaded;
-    keypoints_device.download(downloaded);
-
-    for (size_t i = 0; i < downloaded.size(); ++i)
-    {
-        PointXYZ cpu = keypoints->points[i];
-
-        PointXYZ gpu = downloaded[i];
-
-        float abs_error = 0.01f;
-        ASSERT_NEAR(cpu.x, gpu.x, abs_error);
-        ASSERT_NEAR(cpu.y, gpu.y, abs_error);
-        ASSERT_NEAR(cpu.z, gpu.z, abs_error);
-    }
-}
-
-TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_3)
-{
-    DataSource source(filepath);
-    cout << "Cloud size: " << source.cloud->points.size() << endl;
-    cout << "Salient Radius: " << source.salient_radius << endl;
-    cout << "Non Max Radius: " << source.non_max_radius << endl;
-    cout << "Max_elems: " << source.max_elements << endl;
-
-    cout << "!indices, surface" << endl;
-
-    // source.runCloudViewer();
-
-    source.generateSurface();
-    // source.generateIndices();
-
-    pcl::ISSKeypoint3D<PointXYZ, PointXYZ> iss_detector;
-    iss_detector.setNumberOfThreads(1);
-    iss_detector.setInputCloud(source.cloud);
-    iss_detector.setSearchMethod (pcl::search::KdTree<PointXYZ>::Ptr (new pcl::search::KdTree<PointXYZ>));
-    iss_detector.setSalientRadius(source.salient_radius);
-    iss_detector.setNonMaxRadius(source.non_max_radius);
-    iss_detector.setSearchSurface(source.surface);
-    // iss_detector.setIndices(source.indices);
-
-    PointCloud<PointXYZ>::Ptr keypoints(new PointCloud<PointXYZ>());
-    iss_detector.compute(*keypoints);
-
-    pcl::gpu::ISSKeypoint3D::PointCloud cloud_device;
-    cloud_device.upload(source.cloud->points);
-
-    pcl::gpu::ISSKeypoint3D::PointCloud surface_device;
-    surface_device.upload(source.surface->points);
-
-    // pcl::gpu::ISSKeypoint3D::Indices indices_device;
-    // indices_device.upload(*source.indices);
-
-    pcl::gpu::ISSKeypoint3D iss_detector_device;
-    iss_detector_device.setInputCloud(cloud_device);
-    iss_detector_device.setSalientRadius(source.salient_radius);
-    iss_detector_device.setNonMaxRadius(source.non_max_radius);
-    iss_detector_device.setSearchSurface(surface_device);
-    // iss_detector_device.setIndices(indices_device);
-
-    pcl::gpu::ISSKeypoint3D::PointCloud keypoints_device;
-    iss_detector_device.compute(keypoints_device);
-
-    vector<PointXYZ> downloaded;
-    keypoints_device.download(downloaded);
-
-    for (size_t i = 0; i < downloaded.size(); ++i)
-    {
-        PointXYZ cpu = keypoints->points[i];
-
-        PointXYZ gpu = downloaded[i];
-
-        float abs_error = 0.01f;
-        ASSERT_NEAR(cpu.x, gpu.x, abs_error);
-        ASSERT_NEAR(cpu.y, gpu.y, abs_error);
-        ASSERT_NEAR(cpu.z, gpu.z, abs_error);
-    }
-}
-
-TEST(PCL_KeypointsGPU, isskeypoint3d_highlevel_4)
-{
-    DataSource source(filepath);
-    cout << "Cloud size: " << source.cloud->points.size() << endl;
-    cout << "Salient Radius: " << source.salient_radius << endl;
-    cout << "Non Max Radius: " << source.non_max_radius << endl;
-    cout << "Max_elems: " << source.max_elements << endl;
-
-    cout << "indices, surface" << endl;
-
-    // source.runCloudViewer();
-
-    source.generateSurface();
-    source.generateIndices();
-
-
-    pcl::ISSKeypoint3D<PointXYZ, PointXYZ> iss_detector;
-    iss_detector.setInputCloud(source.cloud);
-    iss_detector.setSearchMethod (pcl::search::KdTree<PointXYZ>::Ptr (new pcl::search::KdTree<PointXYZ>));
-    iss_detector.setSalientRadius(source.salient_radius);
-    iss_detector.setNonMaxRadius(source.non_max_radius);
-    iss_detector.setSearchSurface(source.surface);
-    iss_detector.setIndices(source.indices);
-
-    PointCloud<PointXYZ>::Ptr keypoints(new PointCloud<PointXYZ>());
-    iss_detector.compute(*keypoints);
-
-    pcl::gpu::ISSKeypoint3D::PointCloud cloud_device;
-    cloud_device.upload(source.cloud->points);
-
-    pcl::gpu::ISSKeypoint3D::PointCloud surface_device;
-    surface_device.upload(source.surface->points);
-
-    pcl::gpu::ISSKeypoint3D::Indices indices_device;
-    indices_device.upload(*source.indices);
-
-    pcl::gpu::ISSKeypoint3D iss_detector_device;
-    iss_detector_device.setInputCloud(cloud_device);
-    iss_detector_device.setSalientRadius(source.salient_radius);
-    iss_detector_device.setNonMaxRadius(source.non_max_radius);
-    iss_detector_device.setSearchSurface(surface_device);
-    iss_detector_device.setIndices(indices_device);
 
     pcl::gpu::ISSKeypoint3D::PointCloud keypoints_device;
     iss_detector_device.compute(keypoints_device);

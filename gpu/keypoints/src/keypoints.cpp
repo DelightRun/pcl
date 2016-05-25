@@ -42,8 +42,6 @@
 #include <pcl/console/print.h>
 #include <pcl/exceptions.h>
 
-#include <iostream>
-
 using namespace pcl::device;
 
 /////////////////////////////////////////////////////////////////////////
@@ -81,21 +79,11 @@ void pcl::gpu::ISSKeypoint3D::setMinNeighbors(double min_neighbors) { min_neighb
 
 void pcl::gpu::ISSKeypoint3D::detectKeypoints(PointCloud& output)
 {
-    PointCloud& surface = surface_.empty() ? cloud_ : surface_;
-
-    octree_.setCloud(surface);
+    octree_.setCloud(cloud_);
     octree_.build();
 
-    if (indices_.empty() || (!indices_.empty() && indices_.size() == cloud_.size()))
-    {
-        octree_.radiusSearch(cloud_, salient_radius_, max_results_, nn_indices_);
-        octree_.radiusSearch(cloud_, non_max_radius_, max_results_, nn_indices2_);
-    }
-    else
-    {
-        octree_.radiusSearch(cloud_, indices_, salient_radius_, max_results_, nn_indices_);
-        octree_.radiusSearch(cloud_, indices_, non_max_radius_, max_results_, nn_indices2_);
-    }
+    octree_.radiusSearch(cloud_, salient_radius_, max_results_, nn_indices_);
+    octree_.radiusSearch(cloud_, non_max_radius_, max_results_, nn_indices2_);
 
     const device::PointCloud& c = (const device::PointCloud&)cloud_;
     device::PointCloud& o = (device::PointCloud&)output;
