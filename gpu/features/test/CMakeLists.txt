@@ -1,9 +1,6 @@
-if(BUILD_TESTS)
-
-    include_directories("${PCL_SOURCE_DIR}/test/gtest-1.6.0/include"
-                        "${PCL_SOURCE_DIR}/test/gtest-1.6.0")
-    
-    set(pcl_gtest_sources "${PCL_SOURCE_DIR}/test/gtest-1.6.0/src/gtest-all.cc")
+if(BUILD_GPU_TESTS)
+    find_package(Gtest REQUIRED)
+    include_directories(SYSTEM ${GTEST_INCLUDE_DIRS} ${GTEST_SRC_DIR})
 
     set(the_test_target test_gpu_features)
     
@@ -24,7 +21,6 @@ if(BUILD_TESTS)
     FILE(GLOB test_src *.cpp *.hpp)
     list(APPEND test_src ${pcl_gtest_sources})
     include_directories("${INC1}" "${INC2}" "${INC3}" "${INC4}" "${INC5}" "${INC6}" "${INC7}" ${VTK_INCLUDE_DIRS})
-    #PCL_ADD_TEST(a_gpu_features_test ${the_test_target} FILES ${test_src} LINK_WITH pcl_gpu_containers pcl_gpu_octree pcl_gpu_features pcl_io pcl_features pcl_visualization pcl_common)
-    
-    #add_dependencies(${the_test_target} pcl_gpu_octree pcl_gpu_containes pcl_gpu_features pcl_io pcl_features pcl_visualization pcl_common)    
+    PCL_ADD_TEST(gpu_features_test ${the_test_target} FILES ${test_src} LINK_WITH pcl_gtest pcl_gpu_containers pcl_gpu_octree pcl_gpu_features pcl_io pcl_features pcl_visualization pcl_common ARGUMENTS "${PCL_SOURCE_DIR}/test/office_chair_model.pcd")
+    add_dependencies(${the_test_target} pcl_gpu_octree pcl_gpu_containes pcl_gpu_features pcl_io pcl_features pcl_visualization pcl_common pcl_gtest)    
 endif(BUILD_TESTS)

@@ -35,7 +35,7 @@
  */
 
 
-#if (defined(__GNUC__) && !defined(__CUDACC__) && (GTEST_GCC_VER_ >= 40000)) 
+#if (defined(__GNUC__) && !defined(__CUDACC__) && (GTEST_GCC_VER_ >= 40000))
     #define GTEST_USE_OWN_TR1_TUPLE 0
 #endif
 
@@ -57,38 +57,40 @@ using namespace std;
 using namespace pcl;
 using namespace pcl::gpu;
 
+extern string filepath;
+
 //TEST(PCL_FeaturesGPU, DISABLED_vfh1)
 TEST(PCL_FeaturesGPU, vfh1)
-{   
-    DataSource source;
-    
+{
+    DataSource source(filepath);
+
     source.estimateNormals();
     source.generateIndices(3);
-                   
-    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
-    std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());        
-    
+
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());
+    std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
+
     //uploading data to GPU
 
-    //////////////////////////////////////////////////////////////////////////////////////////////  
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     pcl::gpu::VFHEstimation::PointCloud cloud_gpu;
     cloud_gpu.upload(source.cloud->points);
 
     pcl::gpu::VFHEstimation::Normals normals_gpu;
-    normals_gpu.upload(normals_for_gpu);             
+    normals_gpu.upload(normals_for_gpu);
 
     pcl::gpu::VFHEstimation::Indices indices_gpu;
     indices_gpu.upload(*source.indices);
 
-    gpu::VFHEstimation pc_gpu;    
+    gpu::VFHEstimation pc_gpu;
     pc_gpu.setSearchSurface(cloud_gpu);
     pc_gpu.setInputNormals(normals_gpu);
     pc_gpu.setIndices(indices_gpu);
     pc_gpu.setRadiusSearch(source.radius, source.max_elements);
 
     DeviceArray<VFHSignature308> vfh_features;
-    
+
     {
         //ScopeTime up("gpu");
         pc_gpu.compute(vfh_features);
@@ -112,9 +114,9 @@ TEST(PCL_FeaturesGPU, vfh1)
 
     VFHSignature308& gpu = downloaded[0];
     VFHSignature308& cpu = vfh.points[0];
-        
-    size_t FSize = sizeof(VFHSignature308)/sizeof(gpu.histogram[0]);                                
-        
+
+    size_t FSize = sizeof(VFHSignature308)/sizeof(gpu.histogram[0]);
+
     float norm = 0, norm_diff = 0;
     for(size_t j = 0; j < FSize; ++j)
     {
@@ -131,29 +133,29 @@ TEST(PCL_FeaturesGPU, vfh1)
 
 //TEST(PCL_FeaturesGPU, DISABLED_vfh_norm_bins_false)
 TEST(PCL_FeaturesGPU, vfh_norm_bins_false)
-{   
-    DataSource source;
-    
+{
+    DataSource source(filepath);
+
     source.estimateNormals();
     source.generateIndices(3);
-                   
-    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
-    std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());        
-    
+
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());
+    std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
+
     //uploading data to GPU
 
-    //////////////////////////////////////////////////////////////////////////////////////////////  
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     pcl::gpu::VFHEstimation::PointCloud cloud_gpu;
     cloud_gpu.upload(source.cloud->points);
 
     pcl::gpu::VFHEstimation::Normals normals_gpu;
-    normals_gpu.upload(normals_for_gpu);             
+    normals_gpu.upload(normals_for_gpu);
 
     pcl::gpu::VFHEstimation::Indices indices_gpu;
     indices_gpu.upload(*source.indices);
 
-    gpu::VFHEstimation pc_gpu;    
+    gpu::VFHEstimation pc_gpu;
     pc_gpu.setNormalizeBins(false);
     pc_gpu.setSearchSurface(cloud_gpu);
     pc_gpu.setInputNormals(normals_gpu);
@@ -179,9 +181,9 @@ TEST(PCL_FeaturesGPU, vfh_norm_bins_false)
 
     VFHSignature308& gpu = downloaded[0];
     VFHSignature308& cpu = vfh.points[0];
-        
-    size_t FSize = sizeof(VFHSignature308)/sizeof(gpu.histogram[0]);                                
-        
+
+    size_t FSize = sizeof(VFHSignature308)/sizeof(gpu.histogram[0]);
+
     float norm = 0, norm_diff = 0;
     for(size_t j = 0; j < FSize; ++j)
     {
@@ -198,29 +200,29 @@ TEST(PCL_FeaturesGPU, vfh_norm_bins_false)
 
 //TEST(PCL_FeaturesGPU, DISABLED_vfh_norm_distance_true)
 TEST(PCL_FeaturesGPU, vfh_norm_distance_true)
-{   
-    DataSource source;
-    
+{
+    DataSource source(filepath);
+
     source.estimateNormals();
     source.generateIndices(3);
-                   
-    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
-    std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());        
-    
+
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());
+    std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
+
     //uploading data to GPU
 
-    //////////////////////////////////////////////////////////////////////////////////////////////  
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     pcl::gpu::VFHEstimation::PointCloud cloud_gpu;
     cloud_gpu.upload(source.cloud->points);
 
     pcl::gpu::VFHEstimation::Normals normals_gpu;
-    normals_gpu.upload(normals_for_gpu);             
+    normals_gpu.upload(normals_for_gpu);
 
     pcl::gpu::VFHEstimation::Indices indices_gpu;
     indices_gpu.upload(*source.indices);
 
-    gpu::VFHEstimation pc_gpu;    
+    gpu::VFHEstimation pc_gpu;
     pc_gpu.setNormalizeDistance(true);
     pc_gpu.setSearchSurface(cloud_gpu);
     pc_gpu.setInputNormals(normals_gpu);
@@ -246,9 +248,9 @@ TEST(PCL_FeaturesGPU, vfh_norm_distance_true)
 
     VFHSignature308& gpu = downloaded[0];
     VFHSignature308& cpu = vfh.points[0];
-        
-    size_t FSize = sizeof(VFHSignature308)/sizeof(gpu.histogram[0]);                                
-        
+
+    size_t FSize = sizeof(VFHSignature308)/sizeof(gpu.histogram[0]);
+
     float norm = 0, norm_diff = 0;
     for(size_t j = 0; j < FSize; ++j)
     {
@@ -266,29 +268,29 @@ TEST(PCL_FeaturesGPU, vfh_norm_distance_true)
 
 //TEST(PCL_FeaturesGPU, DISABLED_vfh_fill_size_component_true)
 TEST(PCL_FeaturesGPU, vfh_fill_size_component_true)
-{   
-    DataSource source;
-    
+{
+    DataSource source(filepath);
+
     source.estimateNormals();
     source.generateIndices(3);
-                   
-    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
-    std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());        
-    
+
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());
+    std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
+
     //uploading data to GPU
 
-    //////////////////////////////////////////////////////////////////////////////////////////////  
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     pcl::gpu::VFHEstimation::PointCloud cloud_gpu;
     cloud_gpu.upload(source.cloud->points);
 
     pcl::gpu::VFHEstimation::Normals normals_gpu;
-    normals_gpu.upload(normals_for_gpu);             
+    normals_gpu.upload(normals_for_gpu);
 
     pcl::gpu::VFHEstimation::Indices indices_gpu;
     indices_gpu.upload(*source.indices);
 
-    gpu::VFHEstimation pc_gpu;    
+    gpu::VFHEstimation pc_gpu;
     pc_gpu.setFillSizeComponent(true);
     pc_gpu.setSearchSurface(cloud_gpu);
     pc_gpu.setInputNormals(normals_gpu);
@@ -314,9 +316,9 @@ TEST(PCL_FeaturesGPU, vfh_fill_size_component_true)
 
     VFHSignature308& gpu = downloaded[0];
     VFHSignature308& cpu = vfh.points[0];
-        
-    size_t FSize = sizeof(VFHSignature308)/sizeof(gpu.histogram[0]);                                
-        
+
+    size_t FSize = sizeof(VFHSignature308)/sizeof(gpu.histogram[0]);
+
     float norm = 0, norm_diff = 0;
     for(size_t j = 0; j < FSize; ++j)
     {

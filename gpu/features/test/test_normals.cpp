@@ -34,7 +34,7 @@
 *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
 */
 
-#if (defined(__GNUC__) && !defined(__CUDACC__) && (GTEST_GCC_VER_ >= 40000)) 
+#if (defined(__GNUC__) && !defined(__CUDACC__) && (GTEST_GCC_VER_ >= 40000))
     #define GTEST_USE_OWN_TR1_TUPLE 0
 #endif
 
@@ -45,6 +45,7 @@
 #include <gtest/gtest.h>
 #include "data_source.hpp"
 #include <iostream>
+#include <string>
 
 #include <pcl/gpu/features/features.hpp>
 #include <pcl/gpu/containers/initialization.h>
@@ -54,10 +55,12 @@ using namespace std;
 using namespace pcl;
 using namespace pcl::gpu;
 
+string filepath;
+
 //TEST(PCL_FeaturesGPU, DISABLED_normals_lowlevel)
 TEST(PCL_FeaturesGPU, normals_lowlevel)
-{       
-    DataSource source;
+{
+    DataSource source(filepath);
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Radius: " << source.radius << endl;
     cout << "K: " << source.k << endl;
@@ -65,14 +68,14 @@ TEST(PCL_FeaturesGPU, normals_lowlevel)
     //source.runCloudViewer();
 
     source.estimateNormals();
-    source.findKNNeghbors();    
+    source.findKNNeghbors();
 
-    gpu::NormalEstimation::PointCloud cloud;    
+    gpu::NormalEstimation::PointCloud cloud;
     cloud.upload(source.cloud->points);
 
     // convert to single array format
     vector<int> neighbors_all(source.max_nn_size * cloud.size());
-    PtrStep<int> ps(&neighbors_all[0], source.max_nn_size * PtrStep<int>::elem_size);    
+    PtrStep<int> ps(&neighbors_all[0], source.max_nn_size * PtrStep<int>::elem_size);
     for(size_t i = 0; i < cloud.size(); ++i)
         copy(source.neighbors_all[i].begin(), source.neighbors_all[i].end(), ps.ptr(i));
 
@@ -91,7 +94,7 @@ TEST(PCL_FeaturesGPU, normals_lowlevel)
         Normal n = source.normals->points[i];
 
         PointXYZ xyz = downloaded[i];
-        float curvature = xyz.data[3];               
+        float curvature = xyz.data[3];
 
         float abs_error = 0.01f;
         ASSERT_NEAR(n.normal_x, xyz.x, abs_error);
@@ -105,14 +108,14 @@ TEST(PCL_FeaturesGPU, normals_lowlevel)
 
 //TEST(PCL_FeaturesGPU, DISABLED_normals_highlevel_1)
 TEST(PCL_FeaturesGPU, normals_highlevel_1)
-{       
-    DataSource source;
+{
+    DataSource source(filepath);
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Radius: " << source.radius << endl;
     cout << "Max_elems: " <<  source.max_elements << endl;
 
     cout << "!indices, !surface" << endl;
-    
+
     //source.runCloudViewer();
 
     //source.generateSurface();
@@ -155,7 +158,7 @@ TEST(PCL_FeaturesGPU, normals_highlevel_1)
         Normal n = normals->points[i];
 
         PointXYZ xyz = downloaded[i];
-        float curvature = xyz.data[3];                        
+        float curvature = xyz.data[3];
 
         float abs_error = 0.01f;
         ASSERT_NEAR(n.normal_x, xyz.x, abs_error);
@@ -169,14 +172,14 @@ TEST(PCL_FeaturesGPU, normals_highlevel_1)
 
 //TEST(PCL_FeaturesGPU, DISABLED_normals_highlevel_2)
 TEST(PCL_FeaturesGPU, normals_highlevel_2)
-{       
-    DataSource source;
+{
+    DataSource source(filepath);
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Radius: " << source.radius << endl;
-    cout << "Max_elems: " <<  source.max_elements << endl;    
+    cout << "Max_elems: " <<  source.max_elements << endl;
 
     cout << "indices, !surface" << endl;
-    
+
     //source.runCloudViewer();
 
     //source.generateSurface();
@@ -220,7 +223,7 @@ TEST(PCL_FeaturesGPU, normals_highlevel_2)
         Normal n = normals->points[i];
 
         PointXYZ xyz = downloaded[i];
-        float curvature = xyz.data[3];                        
+        float curvature = xyz.data[3];
 
         float abs_error = 0.01f;
         ASSERT_NEAR(n.normal_x, xyz.x, abs_error);
@@ -234,8 +237,8 @@ TEST(PCL_FeaturesGPU, normals_highlevel_2)
 
 //TEST(PCL_FeaturesGPU, DISABLED_normals_highlevel_3)
 TEST(PCL_FeaturesGPU, normals_highlevel_3)
-{       
-    DataSource source;
+{
+    DataSource source(filepath);
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Radius: " << source.radius << endl;
     cout << "Max_elems: " <<  source.max_elements << endl;
@@ -295,7 +298,7 @@ TEST(PCL_FeaturesGPU, normals_highlevel_3)
         ASSERT_EQ(pcl_isnan(n.normal_x), pcl_isnan(xyz.x));
         ASSERT_EQ(pcl_isnan(n.normal_y), pcl_isnan(xyz.y));
         ASSERT_EQ(pcl_isnan(n.normal_z), pcl_isnan(xyz.z));
-        
+
         ASSERT_NEAR(n.normal_x, xyz.x, abs_error);
         ASSERT_NEAR(n.normal_y, xyz.y, abs_error);
         ASSERT_NEAR(n.normal_z, xyz.z, abs_error);
@@ -308,12 +311,12 @@ TEST(PCL_FeaturesGPU, normals_highlevel_3)
 
 //TEST(PCL_FeaturesGPU, DISABLED_normals_highlevel_4)
 TEST(PCL_FeaturesGPU, normals_highlevel_4)
-{       
-    DataSource source;
+{
+    DataSource source(filepath);
     cout << "Cloud size: " << source.cloud->points.size() << endl;
     cout << "Radius: " << source.radius << endl;
     cout << "Max_elems: " <<  source.max_elements << endl;
-    
+
     cout << "indices, surface" << endl;
 
     //source.runCloudViewer();
@@ -369,7 +372,7 @@ TEST(PCL_FeaturesGPU, normals_highlevel_4)
         ASSERT_EQ(pcl_isnan(n.normal_x), pcl_isnan(xyz.x));
         ASSERT_EQ(pcl_isnan(n.normal_y), pcl_isnan(xyz.y));
         ASSERT_EQ(pcl_isnan(n.normal_z), pcl_isnan(xyz.z));
-        
+
         ASSERT_NEAR(n.normal_x, xyz.x, abs_error);
         ASSERT_NEAR(n.normal_y, xyz.y, abs_error);
         ASSERT_NEAR(n.normal_z, xyz.z, abs_error);
@@ -382,6 +385,11 @@ TEST(PCL_FeaturesGPU, normals_highlevel_4)
 
 int main (int argc, char** argv)
 {
+    if(argc < 2)
+        return -1;
+
+    filepath = argv[1];
+
     pcl::gpu::setDevice(0);
     pcl::gpu::printShortCudaDeviceInfo(0);
     testing::InitGoogleTest (&argc, argv);

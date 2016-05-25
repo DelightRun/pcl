@@ -34,7 +34,7 @@
  *  Author: Anatoly Baskeheev, Itseez Ltd, (myname.mysurname@mycompany.com)
  */
 
-#if (defined(__GNUC__) && !defined(__CUDACC__) && (GTEST_GCC_VER_ >= 40000)) 
+#if (defined(__GNUC__) && !defined(__CUDACC__) && (GTEST_GCC_VER_ >= 40000))
     #define GTEST_USE_OWN_TR1_TUPLE 0
 #endif
 
@@ -54,29 +54,31 @@ using namespace std;
 using namespace pcl;
 using namespace pcl::gpu;
 
+extern string filepath;
+
 //TEST(PCL_FeaturesGPU, DISABLED_PrincipalCurvatures)
 TEST(PCL_FeaturesGPU, PrincipalCurvatures)
-{   
-    DataSource source;
-    
+{
+    DataSource source(filepath);
+
     source.estimateNormals();
-                   
-    vector<PointXYZ> normals_for_gpu(source.normals->points.size());    
+
+    vector<PointXYZ> normals_for_gpu(source.normals->points.size());
     std::transform(source.normals->points.begin(), source.normals->points.end(), normals_for_gpu.begin(), DataSource::Normal2PointXYZ());
-    
+
     //uploading data to GPU
 
-    //////////////////////////////////////////////////////////////////////////////////////////////  
+    //////////////////////////////////////////////////////////////////////////////////////////////
 
     pcl::gpu::PrincipalCurvaturesEstimation::PointCloud cloud_gpu;
     cloud_gpu.upload(source.cloud->points);
 
     pcl::gpu::PrincipalCurvaturesEstimation::Normals normals_gpu;
-    normals_gpu.upload(normals_for_gpu);             
+    normals_gpu.upload(normals_for_gpu);
 
     DeviceArray<PrincipalCurvatures> pc_features;
 
-    gpu::PrincipalCurvaturesEstimation pc_gpu;    
+    gpu::PrincipalCurvaturesEstimation pc_gpu;
     pc_gpu.setInputCloud(cloud_gpu);
     pc_gpu.setInputNormals(normals_gpu);
     pc_gpu.setRadiusSearch(source.radius, source.max_elements);
@@ -96,12 +98,12 @@ TEST(PCL_FeaturesGPU, PrincipalCurvatures)
     for(size_t i = 0; i < downloaded.size(); ++i)
     {
         PrincipalCurvatures& gpu = downloaded[i];
-        PrincipalCurvatures& cpu = pc.points[i];        
+        PrincipalCurvatures& cpu = pc.points[i];
 
         ASSERT_NEAR(gpu.principal_curvature_x, cpu.principal_curvature_x, 0.01f);
         ASSERT_NEAR(gpu.principal_curvature_y, cpu.principal_curvature_y, 0.01f);
         ASSERT_NEAR(gpu.principal_curvature_z, cpu.principal_curvature_z, 0.01f);
         ASSERT_NEAR(gpu.pc1, cpu.pc1, 0.01f);
-        ASSERT_NEAR(gpu.pc2, cpu.pc2, 0.01f);        
+        ASSERT_NEAR(gpu.pc2, cpu.pc2, 0.01f);
     }
 }

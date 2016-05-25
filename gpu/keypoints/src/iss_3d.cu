@@ -43,6 +43,7 @@
 
 #include "pcl/gpu/utils/device/eigen.hpp"
 
+#include <thrust/count.h>
 #include <thrust/copy.h>
 #include <thrust/device_ptr.h>
 
@@ -53,7 +54,7 @@ namespace pcl
 {
     namespace device
     {
-        struct MaxEigenValueCalculator
+        struct ThirdEigenValueCalculator
         {
             enum
             {
@@ -78,18 +79,17 @@ namespace pcl
 
             float threshold21, threshold32;
 
-            PtrSz<float> max_eigen_value;  // Step 1, return max eigen value of each point
+            PtrSz<float> third_eigen_value;  // Step 1, return max eigen value of each point
 
             __device__ __forceinline__ void operator()() const
             {
                 __shared__ float cov_buffer[6][CTA_SIZE + 1];
-                __shared__ float w_buffer[CTA_SIZE + 1];
 
                 int warp_idx = Warp::id();
                 int idx = blockIdx.x * WAPRS +
                           warp_idx;  // index of central point / current point of which normal will be computed
 
-                if (idx >= max_eigen_value.size) return;
+                if (idx >= third_eigen_value.size) return;
 
                 int size = sizes[idx];  // number of central point's neighbors
                 int lane = Warp::laneId();
@@ -97,7 +97,7 @@ namespace pcl
                 if (size < MIN_NEIGHBOORS || size < min_neighboors)
                 {
                     if (lane == 0)
-                        max_eigen_value.data[idx] = -1.0;
+                        third_eigen_value.data[idx] = -1.0;
                     return;
                 }
 
@@ -111,7 +111,6 @@ namespace pcl
                 int tid = threadIdx.x;
 
                 for (int i = 0; i < 6; ++i) cov_buffer[i][tid] = 0.f;
-                w_buffer[tid] = 0.f;
 
                 // get neighbors of current point
                 const int* ibeg = indices.ptr(idx);
@@ -119,18 +118,15 @@ namespace pcl
 
                 for (const int* t = ibeg + lane; t < iend; t += Warp::STRIDE)
                 {
-                    float w = 1.f / sizes[*t];
                     float3 p = fetch(*t);
                     float3 d = p - c;
 
-                    cov_buffer[0][tid] += w * d.x * d.x;  // cov (0, 0)
-                    cov_buffer[1][tid] += w * d.x * d.y;  // cov (0, 1)
-                    cov_buffer[2][tid] += w * d.x * d.z;  // cov (0, 2)
-                    cov_buffer[3][tid] += w * d.y * d.y;  // cov (1, 1)
-                    cov_buffer[4][tid] += w * d.y * d.z;  // cov (1, 2)
-                    cov_buffer[5][tid] += w * d.z * d.z;  // cov (2, 2)
-
-                    w_buffer[tid] += w;  // sum w
+                    cov_buffer[0][tid] += d.x * d.x;  // cov (0, 0)
+                    cov_buffer[1][tid] += d.x * d.y;  // cov (0, 1)
+                    cov_buffer[2][tid] += d.x * d.z;  // cov (0, 2)
+                    cov_buffer[3][tid] += d.y * d.y;  // cov (1, 1)
+                    cov_buffer[4][tid] += d.y * d.z;  // cov (1, 2)
+                    cov_buffer[5][tid] += d.z * d.z;  // cov (2, 2)
                 }
 
                 Warp::reduce(&cov_buffer[0][tid - lane], plus());
@@ -140,10 +136,8 @@ namespace pcl
                 Warp::reduce(&cov_buffer[4][tid - lane], plus());
                 Warp::reduce(&cov_buffer[5][tid - lane], plus());
 
-                Warp::reduce(&w_buffer[tid - lane], plus());
-
                 volatile float* cov = &cov_buffer[0][tid - lane];
-                if (lane < 6) cov[lane] = cov_buffer[lane][tid - lane] / w_buffer[tid - lane];
+                if (lane < 6) cov[lane] = cov_buffer[lane][tid - lane];
 
                 // solvePlaneParameters
                 if (lane == 0)
@@ -160,12 +154,22 @@ namespace pcl
                     eigen33.compute(tmp, vec_tmp, evecs, evals);
                     // evecs[0] - eigenvector with the lowerst eigenvalue
 
-                    float gamma21 = evals.y / evals.x;
-                    float gamma32 = evals.z / evals.y;
+                    const float& e1c = evals.z;
+                    const float& e2c = evals.y;
+                    const float& e3c = evals.x;
+
+                    if (e3c < 0) {
+                        third_eigen_value.data[idx] = -1.;
+                        return;
+                    }
+
+                    float gamma21 = e2c / e1c;
+                    float gamma32 = e3c / e2c;
+
                     if (gamma21 < threshold21 || gamma32 < threshold32)
-                        max_eigen_value.data[idx] = evals.z;
+                        third_eigen_value.data[idx] = e3c;
                     else
-                        max_eigen_value.data[idx] = -1.;
+                        third_eigen_value.data[idx] = -1.;
                 }
             }
 
@@ -195,7 +199,7 @@ namespace pcl
                 }
             };
 
-            PtrSz<float> max_eigen_value;
+            PtrSz<float> third_eigen_value;
             PtrStep<int> indices;
             int min_neighboors;
             const int* sizes;
@@ -209,12 +213,12 @@ namespace pcl
                 int warp_idx = Warp::id();
                 int idx = blockIdx.x * WAPRS + warp_idx;
 
-                if (idx >= max_eigen_value.size) return;
+                if (idx >= third_eigen_value.size) return;
 
                 int size = sizes[idx];
                 int lane = Warp::laneId();
 
-                if (max_eigen_value.data[idx] < 0.0)
+                if (third_eigen_value.data[idx] < 0.0)
                 {
                     if (lane == 0)
                         is_keypoint.data[idx] = false;
@@ -230,7 +234,7 @@ namespace pcl
 
                 for (const int* t = ibeg + lane; t < iend; t += Warp::STRIDE)
                 {
-                    if (max_eigen_value.data[idx] < max_eigen_value.data[*t]) {
+                    if (third_eigen_value.data[idx] < third_eigen_value.data[*t]) {
                         is_max[tid] = false;
                         break;
                     }
@@ -238,36 +242,40 @@ namespace pcl
 
                 Warp::reduce(&is_max[tid - lane], logic_and());
 
-                if (lane == 0) 
+                if (lane == 0) {
                     is_keypoint.data[idx] = is_max[tid - lane];
+                }
             }
         };
 
-        __global__ void MaxEigenValueCalculatorKernel(const MaxEigenValueCalculator mevc) { mevc(); }
+        __global__ void ThirdEigenValueCalculatorKernel(const ThirdEigenValueCalculator mevc) { mevc(); }
         __global__ void NonMaxSuppressorKernel(const NonMaxSuppressor nms) { nms(); }
     }
 }
 
 void pcl::device::detectISSKeypoint3D(
     const PointCloud& cloud, const int min_neighboors,
+    const float threshold21, const float threshold32,
     const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
     const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
     PointCloud& keypoints)
 {
     // Step 1. calculate max eigen value of each point
-    DeviceArray<float> max_eigen_value;
-    max_eigen_value.create(cloud.size());  // TODO: check the usage of `create`
+    DeviceArray<float> third_eigen_value;
+    third_eigen_value.create(cloud.size());
 
-    MaxEigenValueCalculator mevc;
+    ThirdEigenValueCalculator mevc;
     mevc.min_neighboors = min_neighboors;
-    mevc.indices = nn_indices;  // convert NieghborIndices to PtrStep<int>
+    mevc.threshold21 = threshold21;
+    mevc.threshold32 = threshold32;
+    mevc.indices = nn_indices;  // convert NeighborIndices to PtrStep<int>
     mevc.sizes = nn_indices.sizes;
     mevc.points = cloud;
-    mevc.max_eigen_value = max_eigen_value;
+    mevc.third_eigen_value = third_eigen_value;
 
-    int block = MaxEigenValueCalculator::CTA_SIZE;    // number of threads in each block
-    int grid = divUp((int)max_eigen_value.size(), MaxEigenValueCalculator::WAPRS);    // number of blocks in each grid
-    MaxEigenValueCalculatorKernel<<<grid, block>>>(mevc);
+    int block = ThirdEigenValueCalculator::CTA_SIZE;    // number of threads in each block
+    int grid = divUp((int)third_eigen_value.size(), ThirdEigenValueCalculator::WAPRS);    // number of blocks in each grid
+    ThirdEigenValueCalculatorKernel<<<grid, block>>>(mevc);
 
     cudaSafeCall(cudaGetLastError());
     cudaSafeCall(cudaDeviceSynchronize());
@@ -280,7 +288,7 @@ void pcl::device::detectISSKeypoint3D(
     nms.min_neighboors = min_neighboors;
     nms.indices = nn_indices2;
     nms.sizes = nn_indices2.sizes;
-    nms.max_eigen_value = max_eigen_value;
+    nms.third_eigen_value = third_eigen_value;
     nms.is_keypoint = is_keypoint;
 
     block = NonMaxSuppressor::CTA_SIZE;
@@ -291,13 +299,12 @@ void pcl::device::detectISSKeypoint3D(
     cudaSafeCall(cudaDeviceSynchronize());
 
     // Finally. copy results
-    PointCloud buffer;
-    buffer.create(cloud.size());
+    thrust::device_ptr<bool> is_keypoint_ptr(is_keypoint.ptr());
+    thrust::device_ptr<const PointType> cloud_ptr((const PointType*)cloud.ptr());
 
-    device_ptr<const PointType> cloud_ptr((const PointType*)cloud.ptr());
-    device_ptr<PointType> buffer_ptr(buffer.ptr());
-    device_ptr<bool> is_keypoint_ptr(is_keypoint.ptr());
+    int count = thrust::count(is_keypoint_ptr, is_keypoint_ptr + is_keypoint.size(), true);
+    keypoints.create(count);
 
-    int count = (int)(thrust::copy_if(cloud_ptr, cloud_ptr + cloud.size(), is_keypoint_ptr, buffer_ptr, identity<bool>()) - buffer_ptr);
-    keypoints = PointCloud(buffer.ptr(), count);
+    thrust::device_ptr<PointType> keypoints_ptr(keypoints.ptr());
+    thrust::copy_if(cloud_ptr, cloud_ptr + cloud.size(), is_keypoint_ptr, keypoints_ptr, thrust::identity<bool>());
 }

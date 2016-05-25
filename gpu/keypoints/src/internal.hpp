@@ -67,6 +67,7 @@ namespace pcl
         // ISS keypoints estimation
         void detectISSKeypoint3D(const PointCloud& cloud,
             const int min_neighboors,
+            const float threshold21, const float threshold32,
             const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
             const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
             PointCloud& keypoints);

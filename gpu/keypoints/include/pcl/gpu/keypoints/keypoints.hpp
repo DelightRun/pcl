@@ -67,6 +67,7 @@ namespace pcl
             void setSearchSurface(const PointCloud &surface);
             void setIndices(const Indices &indices);
             void setRadiusSearch(float radius, int max_results);
+            void compute(PointCloud &output);
 
           protected:
             PointCloud cloud_;
@@ -76,12 +77,14 @@ namespace pcl
             int max_results_;
 
             Octree octree_;
+
+            virtual void detectKeypoints(PointCloud &output) = 0;
         };
 
         struct PCL_EXPORTS ISSKeypoint3D : Keypoints
         {
           public:
-            ISSKeypoint3D(double salient_radius);
+            ISSKeypoint3D(double salient_radius = 0.001);
 
             void setSalientRadius(double salient_radius);
             void setNonMaxRadius(double non_max_radius);
@@ -89,7 +92,9 @@ namespace pcl
             void setThreshold32(double gamma_32);
             void setMinNeighbors(double min_neighbors);
 
-            void detectKeypoints(PointCloud &output);  // TODO: 寻找合适的输出形式
+          protected:
+            void detectKeypoints(PointCloud &output);
+
           private:
             NeighborIndices nn_indices_, nn_indices2_;
 

@@ -42,6 +42,8 @@
 #include <pcl/console/print.h>
 #include <pcl/exceptions.h>
 
+#include <iostream>
+
 using namespace pcl::device;
 
 /////////////////////////////////////////////////////////////////////////
@@ -56,11 +58,12 @@ void pcl::gpu::Keypoints::setRadiusSearch(float radius, int max_results)
     radius_ = radius;
     max_results_ = max_results;
 }
+void pcl::gpu::Keypoints::compute(PointCloud &output) { detectKeypoints(output); }
 
 /////////////////////////////////////////////////////////////////////////
 //// ISSKeypoint3D
 
-pcl::gpu::ISSKeypoint3D::ISSKeypoint3D(double salient_radius = 0.0001)
+pcl::gpu::ISSKeypoint3D::ISSKeypoint3D(double salient_radius)
     : salient_radius_(salient_radius),
       non_max_radius_(0.0),
       gamma_21_(0.975),
@@ -97,5 +100,5 @@ void pcl::gpu::ISSKeypoint3D::detectKeypoints(PointCloud& output)
     const device::PointCloud& c = (const device::PointCloud&)cloud_;
     device::PointCloud& o = (device::PointCloud&)output;
 
-    device::detectISSKeypoint3D(c, min_neighbors_, nn_indices_, nn_indices2_, o);
+    device::detectISSKeypoint3D(c, min_neighbors_, gamma_21_, gamma_32_, nn_indices_, nn_indices2_, o);
 }
