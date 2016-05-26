@@ -260,7 +260,7 @@ void pcl::device::detectISSKeypoint3D(
     const float threshold21, const float threshold32,
     const NeighborIndices& nn_indices,   // NeighborIndices for calculate max eigen value of scatter matrix
     const NeighborIndices& nn_indices2,  // NeighborIndices for non max suppress/detect keypoints
-    PointCloud& keypoints)
+    PointCloud& keypoints, Indices& keypoints_indices)
 {
     // Step 1. calculate max eigen value of each point
     DeviceArray<float> third_eigen_value;
@@ -306,7 +306,11 @@ void pcl::device::detectISSKeypoint3D(
 
     int count = thrust::count(is_keypoint_ptr, is_keypoint_ptr + is_keypoint.size(), true);
     keypoints.create(count);
+    keypoints_indices.create(count);
 
     thrust::device_ptr<PointType> keypoints_ptr(keypoints.ptr());
+    thrust::device_ptr<int> keypoints_indices_ptr(keypoints_indices.ptr());
+
     thrust::copy_if(cloud_ptr, cloud_ptr + cloud.size(), is_keypoint_ptr, keypoints_ptr, thrust::identity<bool>());
+    thrust::copy_if(thrust::counting_iterator<int>(0), thrust::counting_iterator<int>(cloud.size()), is_keypoint_ptr, keypoints_indices_ptr, thrust::identity<bool>());
 }

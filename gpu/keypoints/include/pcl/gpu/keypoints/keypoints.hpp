@@ -68,11 +68,13 @@ namespace pcl
             void setIndices(const Indices &indices);
             void setRadiusSearch(float radius, int max_results);
             void compute(PointCloud &output);
+            Indices getKeypointsIndices();
 
           protected:
             PointCloud cloud_;
             PointCloud surface_;
             Indices indices_;
+            INdices keypoints_indices_;
             float radius_;
             int max_results_;
 
