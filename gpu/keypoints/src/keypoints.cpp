@@ -57,6 +57,7 @@ void pcl::gpu::Keypoints::setRadiusSearch(float radius, int max_results)
     max_results_ = max_results;
 }
 void pcl::gpu::Keypoints::compute(PointCloud &output) { detectKeypoints(output); }
+Indices getKeypointsIndices() { return (keypoints_indices_); }
 
 /////////////////////////////////////////////////////////////////////////
 //// ISSKeypoint3D
@@ -85,8 +86,9 @@ void pcl::gpu::ISSKeypoint3D::detectKeypoints(PointCloud& output)
     octree_.radiusSearch(cloud_, salient_radius_, max_results_, nn_indices_);
     octree_.radiusSearch(cloud_, non_max_radius_, max_results_, nn_indices2_);
 
-    const device::PointCloud& c = (const device::PointCloud&)cloud_;
-    device::PointCloud& o = (device::PointCloud&)output;
+    const device::PointCloud& c = (const device::PointCloud&) cloud_;
+    device::PointCloud& o = (device::PointCloud&) output;
+    device::Indices& ki = (device::Indices&) keypoints_indices_;
 
-    device::detectISSKeypoint3D(c, min_neighbors_, gamma_21_, gamma_32_, nn_indices_, nn_indices2_, o);
+    device::detectISSKeypoint3D(c, min_neighbors_, gamma_21_, gamma_32_, nn_indices_, nn_indices2_, o, ki);
 }
