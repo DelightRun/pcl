@@ -57,7 +57,7 @@ void pcl::gpu::Keypoints::setRadiusSearch(float radius, int max_results)
     max_results_ = max_results;
 }
 void pcl::gpu::Keypoints::compute(PointCloud &output) { detectKeypoints(output); }
-Indices getKeypointsIndices() { return (keypoints_indices_); }
+Indices pcl::gpu::Keypoints::getKeypointsIndices() { return (keypoints_indices_); }
 
 /////////////////////////////////////////////////////////////////////////
 //// ISSKeypoint3D

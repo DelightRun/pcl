@@ -74,7 +74,7 @@ namespace pcl
             PointCloud cloud_;
             PointCloud surface_;
             Indices indices_;
-            INdices keypoints_indices_;
+            Indices keypoints_indices_;
             float radius_;
             int max_results_;
 

@@ -64,7 +64,6 @@ namespace pcl
         struct DataSource
         {
             const static int k = 32;
-            const static int max_elements = 500;
 
             PointCloud<PointXYZ>::Ptr cloud;
             PointCloud<PointXYZ>::Ptr surface;
@@ -76,6 +75,7 @@ namespace pcl
             std::vector< std::vector<int> > neighbors_all;
             std::vector<int> sizes;
             int max_nn_size;
+            int max_elements;
 
             DataSource(const char* filepath)
                 : cloud(new PointCloud<PointXYZ>()), surface(new PointCloud<PointXYZ>()), indices( new std::vector<int>() )
@@ -84,6 +84,8 @@ namespace pcl
                 non_max_radius = 4 * 0.0058329;
 
                 pcl::io::loadPCDFile(filepath, *cloud);
+
+                max_elements = cloud->points.size();
             }
 
             void generateColor()
